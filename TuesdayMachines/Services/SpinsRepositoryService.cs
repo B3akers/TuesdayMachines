@@ -24,5 +24,32 @@ namespace TuesdayMachines.Services
 
             await _databaseService.GetSpinsStat().InsertOneAsync(spin);
         }
+
+        public async Task<List<SpinStatDTO>> GetSpinsStatsLogs(long date, string game, string wallet, int limit, bool sortByMaxX)
+        {
+            List<SpinStatDTO> result = null;
+
+            var sort = sortByMaxX ? Builders<SpinStatDTO>.Sort.Descending(x => x.WinX) : Builders<SpinStatDTO>.Sort.Descending(x => x.Win);
+
+            var spins = _databaseService.GetSpinsStat();
+            if (string.IsNullOrEmpty(wallet))
+            {
+                result = await (await spins.FindAsync(x => x.Datetime >= date && x.Game == game, new FindOptions<SpinStatDTO>()
+                {
+                    Limit = limit,
+                    Sort = sort
+                })).ToListAsync();
+            }
+            else
+            {
+                result = await (await spins.FindAsync(x => x.Datetime >= date && x.Game == game && x.Wallet == wallet, new FindOptions<SpinStatDTO>()
+                {
+                    Limit = limit,
+                    Sort = sort
+                })).ToListAsync();
+            }
+
+            return result;
+        }
     }
 }

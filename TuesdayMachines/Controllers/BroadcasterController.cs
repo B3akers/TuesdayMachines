@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
 using TuesdayMachines.ActionFilters;
 using TuesdayMachines.Dto;
 using TuesdayMachines.Interfaces;
@@ -14,17 +15,19 @@ namespace TuesdayMachines.Controllers
         private readonly DatabaseService _databaseService;
         private readonly IBroadcastersRepository _broadcastersRepository;
         private readonly IPointsRepository _pointsRepository;
+        private readonly IGamesRepository _gamesRepository;
 
-        public BroadcasterController(IBroadcastersRepository broadcastersRepository, DatabaseService databaseService, IPointsRepository pointsRepository)
+        public BroadcasterController(IBroadcastersRepository broadcastersRepository, DatabaseService databaseService, IPointsRepository pointsRepository, IGamesRepository gamesRepository)
         {
             _broadcastersRepository = broadcastersRepository;
             _databaseService = databaseService;
             _pointsRepository = pointsRepository;
+            _gamesRepository = gamesRepository;
         }
 
         [HttpGet("Broadcaster/Index")]
         [HttpGet("Broadcaster/Index/{id}")]
-        public IActionResult Index(string id)
+        public async Task<IActionResult> Index(string id)
         {
             return View();
         }

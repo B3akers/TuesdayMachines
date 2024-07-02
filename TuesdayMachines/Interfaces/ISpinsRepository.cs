@@ -6,5 +6,6 @@ namespace TuesdayMachines.Interfaces
     {
         Task AddSpinLog(SpinDTO spin);
         Task AddSpinStatLog(SpinStatDTO spin);
+        Task<List<SpinStatDTO>> GetSpinsStatsLogs(long date, string game, string wallet, int limit, bool sortByMaxX);
     }
 }

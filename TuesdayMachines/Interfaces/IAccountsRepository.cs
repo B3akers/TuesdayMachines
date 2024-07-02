@@ -8,6 +8,7 @@ namespace TuesdayMachines.Interfaces
         Task<AccountDTO> CreateOrUpdateAccount(TwitchUserResponseModel user, TwitchAuthResponseModel token);
         Task<AccountDTO> GetAccountByTwitchLogin(string login);
         Task<AccountDTO> GetAccountById(string id);
+        Task<List<AccountDTO>> GetAccountsById(IEnumerable<string> ids);
         Task UpdateAccountTokens(string id, TwitchAuthResponseModel token);
     }
 }

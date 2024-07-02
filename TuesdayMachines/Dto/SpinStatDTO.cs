@@ -11,6 +11,7 @@ namespace TuesdayMachines.Dto
         [BsonRepresentation(BsonType.ObjectId)]
         public string AccountId { get; set; }
         public string Game { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
         public string Wallet { get; set; }
         public long Bet { get; set; }
         public long Win { get; set; }

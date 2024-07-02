@@ -4,6 +4,7 @@ using TuesdayMachines.ActionFilters;
 using MongoDB.Driver;
 using TuesdayMachines.Models;
 using TuesdayMachines.Utils;
+using System.Runtime.InteropServices;
 
 namespace TuesdayMachines.Controllers
 {
@@ -14,13 +15,17 @@ namespace TuesdayMachines.Controllers
         private readonly IBroadcastersRepository _broadcastersRepository;
         private readonly IUserFairPlay _userFairPlay;
         private readonly IGamesRepository _gamesRepository;
+        private readonly ISpinsRepository _spinsRepository;
+        private readonly IAccountsRepository _accountsRepository;
 
-        public GameController(IPointsRepository pointsRepository, IBroadcastersRepository broadcastersRepository, IUserFairPlay userFairPlay, IGamesRepository gamesRepository)
+        public GameController(IPointsRepository pointsRepository, IBroadcastersRepository broadcastersRepository, IUserFairPlay userFairPlay, IGamesRepository gamesRepository, ISpinsRepository spinsRepository, IAccountsRepository accountsRepository)
         {
             _pointsRepository = pointsRepository;
             _broadcastersRepository = broadcastersRepository;
             _userFairPlay = userFairPlay;
             _gamesRepository = gamesRepository;
+            _spinsRepository = spinsRepository;
+            _accountsRepository = accountsRepository;
         }
 
         [HttpGet]
@@ -29,6 +34,27 @@ namespace TuesdayMachines.Controllers
             var games = await _gamesRepository.GetGames();
 
             return Json(new { data = await games.ToListAsync() });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetSpinsStats([FromBody] GetSpinsStatsModel model)
+        {
+            if (!ModelState.IsValid)
+                return Json(new { error = "invalid_model" });
+
+            if (model.Time < DateTimeOffset.UtcNow.AddMonths(-1).ToUnixTimeSeconds())
+                return Json(new { error = "invalid_model" });
+
+            var result = await _spinsRepository.GetSpinsStatsLogs(model.Time, model.Game, model.Wallet, 10, model.SortByXWin);
+            var accounts = await _accountsRepository.GetAccountsById(result.Select(x => x.AccountId));
+            var broadcasters = string.IsNullOrEmpty(model.Wallet) ? await _broadcastersRepository.GetBroadcasters(result.DistinctBy(x => x.Wallet).Select(x => x.Wallet)) : new List<Dto.BroadcasterDTO>() { await _broadcastersRepository.GetBroadcasterByAccountId(model.Wallet) };
+
+            return Json(new
+            {
+                data = result,
+                accounts = accounts.Select(x => new { x.Id, x.TwitchLogin }),
+                wallets = broadcasters.Select(x => new { id = x.AccountId, x.Login, x.Points })
+            });
         }
 
         [HttpGet]

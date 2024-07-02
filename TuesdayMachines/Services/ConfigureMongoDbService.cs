@@ -38,6 +38,13 @@ namespace TuesdayMachines.Services
 
             var spins = _databaseService.GetSpins();
             await spins.Indexes.CreateOneAsync(new CreateIndexModel<SpinDTO>(Builders<SpinDTO>.IndexKeys.Ascending(x => x.Datetime).Ascending(x => x.AccountId)));
+
+            var spinsStats = _databaseService.GetSpinsStat();
+            await spinsStats.Indexes.CreateOneAsync(new CreateIndexModel<SpinStatDTO>(Builders<SpinStatDTO>.IndexKeys.Ascending(x => x.Datetime).Ascending(x => x.Game).Descending(x => x.Win)));
+            await spinsStats.Indexes.CreateOneAsync(new CreateIndexModel<SpinStatDTO>(Builders<SpinStatDTO>.IndexKeys.Ascending(x => x.Datetime).Ascending(x => x.Game).Descending(x => x.WinX)));
+
+            await spinsStats.Indexes.CreateOneAsync(new CreateIndexModel<SpinStatDTO>(Builders<SpinStatDTO>.IndexKeys.Ascending(x => x.Datetime).Ascending(x => x.Game).Ascending(x => x.Wallet).Descending(x => x.Win)));
+            await spinsStats.Indexes.CreateOneAsync(new CreateIndexModel<SpinStatDTO>(Builders<SpinStatDTO>.IndexKeys.Ascending(x => x.Datetime).Ascending(x => x.Game).Ascending(x => x.Wallet).Descending(x => x.WinX)));
         }
 
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

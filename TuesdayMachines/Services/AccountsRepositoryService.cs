@@ -47,7 +47,7 @@ namespace TuesdayMachines.Services
         public async Task<AccountDTO> GetAccountById(string id)
         {
             var accounts = _databaseService.GetAccounts();
-            return await(await accounts.FindAsync(x => x.Id == id)).FirstOrDefaultAsync();
+            return await (await accounts.FindAsync(x => x.Id == id)).FirstOrDefaultAsync();
 
         }
 
@@ -55,6 +55,12 @@ namespace TuesdayMachines.Services
         {
             var accounts = _databaseService.GetAccounts();
             return await (await accounts.FindAsync(x => x.TwitchLogin == login)).FirstOrDefaultAsync();
+        }
+
+        public async Task<List<AccountDTO>> GetAccountsById(IEnumerable<string> ids)
+        {
+            var accounts = _databaseService.GetAccounts();
+            return await (await accounts.FindAsync(Builders<AccountDTO>.Filter.In(x => x.Id, ids))).ToListAsync();
         }
 
         public async Task UpdateAccountTokens(string id, TwitchAuthResponseModel token)
