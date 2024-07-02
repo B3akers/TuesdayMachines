@@ -1,0 +1,41 @@
+﻿body {
+    background-color: #3f4a55;
+    color: white;
+}
+body,
+html {
+    height: calc(100%)
+}
+.center-main {
+    display: grid;
+    justify-content: center;
+    align-items: center;
+}
+
+.username-cell {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.footer-padding {
+    padding-top: 3.5rem;
+}
+
+.center-nav {
+    height: calc(100% - 3.5rem);
+    max-width: initial;
+    overflow: auto;
+}
+
+.category-selection {
+    cursor: pointer;
+    padding: 0.5rem;
+    width: 200px;
+}
+
+    .category-selection[selected] {
+        border: 2px solid #73AD21;
+        border-radius: 1rem;
+    }

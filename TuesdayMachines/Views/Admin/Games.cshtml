@@ -1,0 +1,91 @@
+﻿﻿@{
+    ViewData["Title"] = "GAmes";
+    Layout = "~/Views/Shared/_LayoutEmpty.cshtml";
+}
+
+@await Html.PartialAsync("_ModalConfirmBox", "Are you sure you want to delete this game?")
+
+@{
+    await Html.RenderPartialAsync("~/Views/Shared/_NavBar.cshtml");
+}
+
+@section Stylesheets {
+    <link href="https://cdn.datatables.net/v/bs5/dt-1.13.6/datatables.min.css" rel="stylesheet">
+}
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/v/bs5/dt-1.13.6/datatables.min.js"></script>
+    <script>
+        const deleteGameUrl = '@Url.Action("DeleteGame", "Admin")';
+        const getGamesUrl = '@Url.Action("GetGames", "Game")';
+    </script>
+
+    <script src="~/js/admin/games.js"></script>
+}
+
+<div class="modal fade" id="gameModal" tabindex="-1" aria-labelledby="gameModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="gameModalLabel">Add game</h5>
+                <button type="button" class="btn-close btn-primary" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="p-2" data-url="@Url.Action("AddGame","Admin")" data-callback="addGameResponse">
+                    <div class="mb-1">
+                        <label>Name</label>
+                        <input data-form-name="name" type="text" class="form-control" minlength="4" maxlength="25" pattern="^[a-zA-Z0-9_ ]*$" required="">
+                    </div>
+
+                    <div class="mb-1">
+                        <label>Code</label>
+                        <input data-form-name="code" type="text" class="form-control" minlength="4" maxlength="25" pattern="^[a-zA-Z0-9_]*$" required="">
+                    </div>
+
+                    <div class="mb-1">
+                        <label>Color</label>
+                        <input data-form-name="color" type="color" class="form-control" required="">
+                    </div>
+
+                    <div class="mb-1">
+                        <label>Logo</label>
+                        <input data-form-name="logo" type="text" class="form-control" minlength="4" maxlength="256" required="">
+                    </div>
+
+                    <div class="mb-1">
+                        <label for="tagsTextarea" class="form-label">Tags</label>
+                        <textarea class="form-control" data-form-name="metadata" id="tagsTextarea" rows="2"></textarea>
+                    </div>
+
+                    <input type="hidden" data-form-name="id" value="" />
+                    <div class="mb-1">
+                        <button type="submit" class="btn btn-primary mt-2">Add/Modify</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container footer-padding mb-5">
+    <main role="main" class="pb-3">
+        <div class="p-3">
+            <div class="mb-3 d-grid gap-2 d-md-flex justify-content-md-end">
+                <button type="button" onclick="addGameClick()" class="btn btn-primary mt-2 float-end">Add game</button>
+            </div>
+
+            <table id="gamesTable" class="table table-striped" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Code</th>
+                        <th>Color</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>

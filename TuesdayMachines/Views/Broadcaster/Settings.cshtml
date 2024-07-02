@@ -1,0 +1,38 @@
+﻿﻿@{
+    ViewData["Title"] = "Settings";
+    Layout = "~/Views/Shared/_LayoutEmpty.cshtml";
+}
+
+@{
+    await Html.RenderPartialAsync("~/Views/Shared/_NavBar.cshtml");
+}
+
+@model TuesdayMachines.Dto.BroadcasterDTO
+
+<div class="container footer-padding mb-5">
+    <main role="main" class="pb-3">
+        <div class="row">
+            <div class="col m-3 border border-secondary border-3 rounded">
+                <h5>Points settings</h5>
+                <form class="p-2" data-url="@Url.Action("ChangePointsSettings","Broadcaster")">
+                    <div class="mb-1">
+                        <label for="currentName">Points name</label>
+                        <input type="text" data-form-name="points" class="form-control" id="currentName" minlength="2" maxlength="64" pattern="^[a-zA-Z0-9 ]*$" value="@Model.Points" required>
+                    </div>
+                    <div class="mb-1">
+                        <label for="normalPoints">Points for 5min watching</label>
+                        <input type="number" data-form-name="watchPoints" class="form-control" id="normalPoints" value="@Model.WatchPoints">
+                    </div>
+                    <div class="mb-1">
+                        <label for="subPoints">Points for 5min watching (Subscribers)</label>
+                        <input type="number" data-form-name="watchPointsSub" class="form-control" id="subPoints" value="@Model.WatchPointsSub">
+                    </div>
+                    <input type="hidden" data-form-name="accountId" value="@Model.AccountId">
+                    <div class="mb-1">
+                        <button type="submit" class="btn btn-primary mt-2">Apply</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>

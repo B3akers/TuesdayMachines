@@ -1,0 +1,71 @@
+﻿﻿@{
+    var account = Context.Items["userAccount"] as TuesdayMachines.Dto.AccountDTO;
+    var controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    bool isAdminController = controllerName == "Admin";
+    bool isModeratorController = controllerName == "Broadcaster";
+}
+
+<nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark">
+    <div class="container-fluid">
+        @if (isAdminController)
+        {
+            <a class="navbar-brand" href="@Url.Action("Index","Admin")">TuesdayMachines</a>
+        }
+        else
+        {
+            <a class="navbar-brand" href="@Url.Action("Index","Home")">TuesdayMachines</a>
+        }
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+            @if (isAdminController)
+            {
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Games", "Admin")">Games</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Broadcasters", "Admin")">Broadcasters</a>
+                    </li>
+                </ul>
+            }
+            else if (isModeratorController)
+            {
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Accounts", "Broadcaster", new {id = (ViewContext.RouteData.Values["id"])})">Accounts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Settings", "Broadcaster", new {id = (ViewContext.RouteData.Values["id"])})">Settings</a>
+                    </li>
+                </ul>
+            }
+            
+            else
+            {
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                   
+                </ul>
+            }
+
+            <div class="h5 navbar-nav ms-auto mb-2 mb-lg-0 d-flex nav-item dropdown">
+                <a class="text-light nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    @account.TwitchLogin
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="navbarDropdown">
+                    @if ((account.AccountType & (1 << 0)) != 0)
+                    {
+                        <li><a class="dropdown-item" href="@Url.Action("Index", "Admin")">Admin panel</a></li>
+                    }
+                    @if ((account.AccountType & (1 << 1)) != 0)
+                    {
+                        <li><a class="dropdown-item" href="@Url.Action("Index", "Broadcaster")">Broadcaster panel</a></li>
+                    }
+                    <li><a class="dropdown-item" href="@Url.Action("Logout", "Home")">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>

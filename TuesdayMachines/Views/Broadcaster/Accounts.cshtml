@@ -1,0 +1,70 @@
+﻿﻿@{
+    ViewData["Title"] = "Accounts";
+    Layout = "~/Views/Shared/_LayoutEmpty.cshtml";
+}
+
+@model TuesdayMachines.Dto.BroadcasterDTO
+
+@{
+    await Html.RenderPartialAsync("~/Views/Shared/_NavBar.cshtml");
+}
+
+@section Stylesheets {
+    <link href="https://cdn.datatables.net/v/bs5/dt-1.13.6/datatables.min.css" rel="stylesheet">
+}
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/v/bs5/dt-1.13.6/datatables.min.js"></script>
+    <script>
+        const getAccountsUrl = '@Url.Action("GetAccounts", "Broadcaster")';
+        const getAccountWalletUrl = '@Url.Action("GetAccountWallet", "Broadcaster", new { id = (ViewContext.RouteData.Values["id"]) })';
+    </script>
+
+    <script src="~/js/broadcaster/accounts.js"></script>
+}
+
+<div class="modal fade" id="editAccountModal" tabindex="-1" aria-labelledby="editAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editAccountModalLabel">Edit account</h5>
+                <button type="button" class="btn-close btn-primary" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="p-2" data-url="@Url.Action("EditAccountWallet","Broadcaster")">
+                    <div class="mb-1">
+                        <label>TwitchId</label>
+                        <input type="text" data-form-name="twitchId" class="form-control" disabled="">
+                    </div>
+                    <div class="mb-1">
+                        <label>Points value</label>
+                        <input data-form-name="points" type="number" class="form-control">
+                    </div>
+                    <input type="hidden" data-form-name="id" value="@Model.AccountId" />
+                    <div class="mb-1">
+                        <button type="submit" class="btn btn-primary mt-2">Set</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container footer-padding mb-5">
+    <main role="main" class="pb-3">
+        <div class="p-3">
+            <table id="accountsTable" class="table table-striped" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Login</th>
+                        <th>Creation time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>

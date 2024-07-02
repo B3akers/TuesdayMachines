@@ -1,0 +1,64 @@
+﻿﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.js"></script>
+    <link rel="stylesheet" href="~/css/mayan/index.css" />
+</head>
+<body>
+    <div id="game-ui" class="ui d-none">
+        <div class="grid-container">
+            <div style="grid-column: 1 / span 6;" class="balance grid-item">
+                <p style="text-align:left;">
+                    BALANCE
+                    <span id="currentBalanceSpan" data-value="0" style="float:right;">
+
+                    </span>
+                </p>
+            </div>
+            <div style="grid-column: 7 / span 1;" class="grid-item">
+                <button type="button" onclick="onBetDecrease()" class="btn">-</button>
+            </div>
+            <div style="grid-column: 8 / span 4;" class="grid-item">
+                <div class="balance">
+                    <p style="text-align:left;">
+                        TOTAL BET
+                        <span id="betValueSpan" data-value="25" style="float:right;">
+
+                        </span>
+                    </p>
+                </div>
+            </div>
+            <div style="grid-column: 12 / span 1;" class="grid-item">
+                <button type="button" onclick="onBetIncrease()" class="btn">+</button>
+            </div>
+            <div style="grid-column: 13 / span 6;" class="balance grid-item">
+                <p style="text-align:left;">
+                    TOTAL WIN
+                    <span id="totalWinSpan" style="float:right;">
+
+                    </span>
+                </p>
+            </div>
+        </div>
+        <button class="btn btn-spin" type="button" onclick="playGameOrFastSpinOnce()">SPIN</button>
+        <div class="align-right">
+            <input type="range" min="0" max="100" value="100" step="1" oninput="onAudioVolumeChange(this.value)" onchange="onAudioVolumeChange(this.value)" />
+        </div>
+    </div>
+    @Html.AntiForgeryToken()
+    <script>
+        const csrfToken = document.getElementsByName('csrfToken')[0].value;
+    </script>
+    <script>
+        const playGameUrl = '@Url.Action("Play", "Mayan")';
+        const getWalletUrl = '@Url.Action("GetWallet", "Game")';
+    </script>
+    <script src="~/js/mayan/index.js"></script>
+</body>
+</html>
