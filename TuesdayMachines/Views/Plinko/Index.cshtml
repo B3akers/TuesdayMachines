@@ -29,16 +29,18 @@
                     <div style="grid-column: 4 / span 1;" class="d-grid-inline">
                         <button class="btn" onclick="onBetIncrease()" type="button">+</button>
                     </div>
-                    <div style="grid-column: 5 / span 4;" class="d-grid-inline">
-                        <button class="btn" onclick="playGame()" type="button">Bet</button>
+                    <div style="grid-column: 5 / span 4;" class="d-grid-inline d-touch">
+                        <button class="btn" onclick="playGame(true)" type="button">Bet</button>
                     </div>
                 </div>
-                <div class="d-grid">
-                    <input type="text" id="currentBalanceSpan" style="font-size: 22px;" class="white text-center" data-value="0" disabled="" value="" />
+                <div class="d-grid no-select balance">
+                    <span data-value="0" id="currentBalanceSpan"></span>
                 </div>
             </div>
         </div>
-
+    </div>
+    <div class="lastWinsContainer">
+       
     </div>
     @Html.AntiForgeryToken()
     <script>

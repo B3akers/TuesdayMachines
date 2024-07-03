@@ -57,6 +57,11 @@ const betsAllowedValues = [
     20000
 ];
 
+const audioAssets = {
+    click: '../assets/plinko/click.wav',
+    win: '../assets/plinko/win.wav'
+};
+
 const staticBalls = [];
 const rowsPosHeight = [];
 const rowsStartIndex = [];
@@ -69,9 +74,6 @@ function convertPointsToLocalCurrency(value) {
 
 function updateCurrencySpanText(element, currency) {
     element.innerText = "[" + currency + "]" + convertPointsToLocalCurrency(element.dataset.value).toLocaleString();
-}
-function updateCurrencyValueText(element, currency) {
-    element.value = "[" + currency + "]" + convertPointsToLocalCurrency(element.dataset.value).toLocaleString();
 }
 
 function updateBetValue(cursor) {
@@ -100,7 +102,23 @@ function onBetDecrease() {
 function updateBalance(balance) {
     const currentBalanceText = document.getElementById('currentBalanceSpan');
     currentBalanceText.dataset.value = balance;
-    updateCurrencyValueText(currentBalanceText, walletName);
+    updateCurrencySpanText(currentBalanceText, walletName);
+}
+
+function createBox(i) {
+    const box = document.createElement('div');
+    const span = document.createElement('span');
+    const color = progressColorPara(Math.abs(i - rowCount / 2) / (rowCount / 2));
+    box.classList.add('winnerBox');
+    box.style.setProperty('--shadow-color', color);
+    box.style.width = `${widthLength - ballRadius * 1.5}px`;
+    box.style.height = box.style.width;
+    box.style.background = color;
+    
+    span.innerText = `${payoutTable[i]}` + (payoutTable[i] < 100 ? '\xD7' : '');
+    box.appendChild(span);
+
+    return box;
 }
 
 async function getCurrentBalance() {
@@ -249,6 +267,17 @@ class Ball {
             const box = document.querySelector('[data-box-number="' + this.payoutIndex + '"]');
             box.classList.add('winnerBoxAnim');
 
+            const winnerBoxes = document.querySelector('.lastWinsContainer');
+            const winBox = createBox(this.payoutIndex);
+            winnerBoxes.insertBefore(winBox, winnerBoxes.firstChild);
+            if (winnerBoxes.children.length > 5) {
+                winnerBoxes.removeChild(winnerBoxes.lastChild);
+            }
+
+            const audio = new Audio(audioAssets.win);
+            audio.volume = 0.1;
+            audio.play();
+
             if (this.creationTime > lastBallUpdatedBalanceTime) {
                 lastBallUpdatedBalanceTime = this.creationTime;
 
@@ -312,7 +341,7 @@ function changeRows(count) {
     const width = app.canvas.width;
 
     heightLength = height / (count + 1);
-    widthLength = (width * 0.8) / (count + 2);
+    widthLength = width/ (count + 2);
     ballRadius = Math.floor(widthLength / 6);
 
     {
@@ -329,7 +358,7 @@ function changeRows(count) {
         texture = app.renderer.generateTexture(gr);
     }
 
-    const positionStartX = width * 0.1;
+    const positionStartX = (width - ((widthLength * (count + 1)) + (ballRadius * 2))) / 2;
 
     for (let i = 1; i <= count; i++) {
         const posX = positionStartX + ((count - i) * widthLength / 2);
@@ -346,32 +375,41 @@ function changeRows(count) {
 
     const winBoxes = document.getElementById('gameWinBoxes');
     winBoxes.innerHTML = '';
-    winBoxes.style.width = `${Math.floor(width * 0.8) - ballRadius}px`;
+    winBoxes.style.width = `${width - (positionStartX * 2) - (ballRadius * 2)}px`;
+    winBoxes.style.marginLeft = `${ballRadius * 2}px`;
+    winBoxes.style.gap = '1%';
     for (let i = 0; i <= count; i++) {
-        const box = document.createElement('div');
-        const span = document.createElement('span');
-        const color = progressColorPara(Math.abs(i - count / 2) / (count / 2));
-        box.classList.add('winnerBox');
-        box.style.setProperty('--shadow-color', color);
-        box.style.width = `${widthLength - ballRadius * 1.5}px`;
-        box.style.height = box.style.width;
-        box.style.background = color;
+        const box = createBox(i);
         box.dataset.boxNumber = i;
         box.addEventListener('webkitAnimationEnd', function () {
             box.classList.remove('winnerBoxAnim');
         }, false);
-        span.innerText = `${payoutTable[i]}` + (payoutTable[i] < 100 ? '\xD7' : '');
-        box.appendChild(span);
         winBoxes.appendChild(box);
     }
 }
 
+var lastPlayTime = 0;
 var isPlaying = false;
-async function playGame() {
+async function playGame(isButton) {
     if (isPlaying) {
         return;
     }
 
+    if (isButton) {
+        const audio = new Audio(audioAssets.click);
+        audio.play();
+    }
+
+    if (Date.now() - lastPlayTime < 350) {
+        return;
+    }
+
+    if (!isButton) {
+        const audio = new Audio(audioAssets.click);
+        audio.play();
+    }
+
+    lastPlayTime = Date.now();
     isPlaying = true;
 
     const element = document.getElementById('betValueSpan');
@@ -414,8 +452,7 @@ async function playGame() {
         }
 
         const currentBalanceText = document.getElementById('currentBalanceSpan');
-        currentBalanceText.dataset.value = +currentBalanceText.dataset.value - betValue;
-        updateCurrencyValueText(currentBalanceText, walletName);
+        updateBalance(+currentBalanceText.dataset.value - betValue);
 
         balls.push(new Ball(json));
 
@@ -431,10 +468,16 @@ async function playGame() {
 window.addEventListener('keydown', function (e) {
 
     if (e.keyCode == 32) {
-        playGame();
+        playGame(false);
         e.preventDefault();
     }
 });
+
+setInterval(function () {
+    document.querySelectorAll('.winnerBox').forEach(x => {
+        x.classList.remove('winnerBoxAnim');
+    });
+}, 15000);
 
 (async function () {
     const searchParams = new URLSearchParams(window.location.search);
@@ -450,7 +493,7 @@ window.addEventListener('keydown', function (e) {
     updateCurrencySpanText(document.getElementById('betValueSpan'), walletName);
 
     app = new Application();
-    await app.init({ backgroundAlpha: 0, width: 700, height: 500, antialias: true });
+    await app.init({ backgroundAlpha: 0, width: 800, height: 650, antialias: true });
 
     changeRows(16);
 

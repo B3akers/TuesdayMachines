@@ -17,6 +17,13 @@
     user-select: none; /* Standard syntax */
 }
 
+.balance {
+    background-color: #969fa8;
+    text-align: center;
+    color: white;
+    font-size: 22px;
+}
+
 @keyframes moveWinBox {
     from {
         top: 0px;
@@ -40,6 +47,18 @@
 
 .winnerBoxAnim {
     animation: moveWinBox;
+}
+
+.d-touch {
+    touch-action: manipulation;
+}
+
+.lastWinsContainer {
+    position: absolute;
+    top: 250px;
+    left: calc(50% + 350px);
+    display: inline-grid;
+    gap: 5%;
 }
 
 .winnerBoxContainer {

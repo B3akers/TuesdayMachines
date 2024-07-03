@@ -1,3 +1,4 @@
+using System.Threading.RateLimiting;
 using TuesdayMachines.Interfaces;
 using TuesdayMachines.Services;
 
@@ -13,6 +14,22 @@ builder.Services.AddAntiforgery(options =>
 {
     options.FormFieldName = "csrfToken";
     options.HeaderName = "X-Csrf-Token-Value";
+});
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedForHeaderName = "X-Real-IP";
+});
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("spins", httpContext => RateLimitPartition.GetTokenBucketLimiter(partitionKey: httpContext.Connection.RemoteIpAddress.ToString(), factory: _ => new TokenBucketRateLimiterOptions
+    {
+        TokenLimit = 10,
+        TokensPerPeriod = 2,
+        ReplenishmentPeriod = TimeSpan.FromSeconds(1)
+    }));
 });
 
 // Add services to the container.
@@ -49,6 +66,10 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
+app.UseForwardedHeaders();
+
+app.UseRateLimiter();
 
 app.MapControllerRoute(
     name: "default",

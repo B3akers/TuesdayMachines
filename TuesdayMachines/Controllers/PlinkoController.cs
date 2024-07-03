@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using TuesdayMachines.ActionFilters;
 using TuesdayMachines.Interfaces;
 using TuesdayMachines.Models;
@@ -29,6 +30,7 @@ namespace TuesdayMachines.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting("spins")]
         public async Task<IActionResult> Play([FromBody] DefaultGamePlayModel model)
         {
             if (!ModelState.IsValid)
@@ -74,6 +76,7 @@ namespace TuesdayMachines.Controllers
                 }
             }
 
+            /*
             await _spinsRepository.AddSpinLog(new Dto.SpinDTO()
             {
                 AccountId = account.Id,
@@ -83,6 +86,7 @@ namespace TuesdayMachines.Controllers
                 Seed = $"{roundInfo.Client}:{roundInfo.Server}:{roundInfo.Nonce}",
                 Wallet = model.Wallet
             });
+            */
 
             gameResult.CurrentBalance = await _pointsRepository.GetBalance(account.TwitchId, model.Wallet);
 
