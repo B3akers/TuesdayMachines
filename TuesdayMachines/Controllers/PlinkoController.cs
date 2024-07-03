@@ -2,23 +2,21 @@
 using TuesdayMachines.ActionFilters;
 using TuesdayMachines.Interfaces;
 using TuesdayMachines.Models;
-using TuesdayMachines.Services;
 
 namespace TuesdayMachines.Controllers
 {
     [TypeFilter(typeof(HomeActionFilter))]
-    public class MayanController : Controller
+    public class PlinkoController : Controller
     {
-        private readonly long[] _betsAllowedValues = [25, 50, 75, 100, 125, 250, 500, 750, 1000, 1250, 2500, 5000, 10000];
-
-        private readonly IMayanGame _mayanGame;
+        private readonly long[] _betsAllowedValues = [5, 10, 25, 50, 100, 150, 250, 500, 1000, 1500, 2000, 5000, 10000, 15000, 20000];
+        private readonly IPlinkoGame _plinkoGame;
         private readonly IPointsRepository _pointsRepository;
         private readonly IUserFairPlay _userFairPlay;
         private readonly ISpinsRepository _spinsRepository;
 
-        public MayanController(IMayanGame mayanGame, IPointsRepository pointsRepository, IUserFairPlay userFairPlay, ISpinsRepository spinsRepository)
+        public PlinkoController(IPlinkoGame plinkoGame, IPointsRepository pointsRepository, IUserFairPlay userFairPlay, ISpinsRepository spinsRepository)
         {
-            _mayanGame = mayanGame;
+            _plinkoGame = plinkoGame;
             _pointsRepository = pointsRepository;
             _userFairPlay = userFairPlay;
             _spinsRepository = spinsRepository;
@@ -55,7 +53,7 @@ namespace TuesdayMachines.Controllers
                 return Json(new { error = "not_sufficient_funds" });
 
             var roundInfo = await _userFairPlay.GetUserSeedRoundInfo(account.Id);
-            var gameResult = _mayanGame.SimulateGame(roundInfo.Client, roundInfo.Server, roundInfo.Nonce, model.Bet);
+            var gameResult = _plinkoGame.SimulateGame(roundInfo.Client, roundInfo.Server, roundInfo.Nonce, model.Bet);
 
             if (gameResult.TotalWin > 0)
             {
@@ -68,7 +66,7 @@ namespace TuesdayMachines.Controllers
                     {
                         AccountId = account.Id,
                         Bet = model.Bet,
-                        Game = "mayan",
+                        Game = "plinko",
                         Wallet = model.Wallet,
                         Win = gameResult.TotalWin,
                         WinX = (long)X
@@ -81,7 +79,7 @@ namespace TuesdayMachines.Controllers
                 AccountId = account.Id,
                 Bet = model.Bet,
                 Result = gameResult.TotalWin,
-                Game = $"mayan_{_mayanGame.GetVersion()}",
+                Game = $"plinko_{_plinkoGame.GetVersion()}",
                 Seed = $"{roundInfo.Client}:{roundInfo.Server}:{roundInfo.Nonce}",
                 Wallet = model.Wallet
             });

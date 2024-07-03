@@ -114,6 +114,8 @@ namespace TuesdayMachines.Controllers
 
             if (model.GameId == "mayan")
                 return Json(new { redirect = Url.Action("Index", "Mayan", new { wallet = model.Wallet }) });
+            else if (model.GameId == "plinko")
+                return Json(new { redirect = Url.Action("Index", "Plinko", new { wallet = model.Wallet }) });
 
             return Json(new { error = "invalid_model" });
         }

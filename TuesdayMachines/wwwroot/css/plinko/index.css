@@ -1,0 +1,101 @@
+﻿body {
+    background-color: #202b39;
+    font-family: system-ui,-apple-system,system-ui,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.ui {
+    background-color: #2d3e50;
+    display: grid;
+    margin-top: 2rem;
+}
+
+.no-select {
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+}
+
+@keyframes moveWinBox {
+    from {
+        top: 0px;
+    }
+
+    to {
+        top: 15px;
+    }
+}
+
+.winnerBox {
+    display: inline-grid;
+    border-radius: 0.3rem;
+    text-align: center;
+    font-size: 11px;
+    align-content: center;
+    position: relative;
+    animation-duration: .3s !important;
+    box-shadow: 0 .2em 0 0 var(--shadow-color);
+}
+
+.winnerBoxAnim {
+    animation: moveWinBox;
+}
+
+.winnerBoxContainer {
+    display: grid;
+    grid-template-columns: auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto;
+}
+
+.white {
+    color: white;
+}
+
+.bet {
+    justify-content: center;
+    align-content: center;
+}
+
+.btn {
+    background-color: #3a4c61;
+    border-radius: 0.3rem;
+    border: none;
+    color: white;
+    margin-left: 0.5rem;
+    height: 50px;
+}
+
+    .btn:hover {
+        background-color: #4c637d;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .btn:active {
+        background-color: #263240;
+        box-shadow: rgba(0, 0, 0, .06) 0 2px 4px;
+        transform: translateY(0);
+    }
+
+.bet-control {
+    grid-template-columns: auto auto auto auto auto auto auto auto;
+    padding: 1rem;
+}
+
+.justify-content-center {
+    justify-content: center;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.d-grid {
+    display: grid;
+}
+
+.d-grid-inline {
+    display: inline-grid;
+}

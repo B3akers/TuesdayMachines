@@ -1,0 +1,53 @@
+﻿﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.js"></script>
+    <link rel="stylesheet" href="~/css/plinko/index.css" />
+</head>
+<body>
+    <div class="d-grid">
+        <div id="gameContainer" class="text-center">
+        </div>
+        <div class="d-grid justify-content-center">
+            <div class="winnerBoxContainer" id="gameWinBoxes">
+            </div>
+            <div class="ui">
+                <div class="d-grid bet-control">
+                    <div style="grid-column: 1 / span 2;" class="d-grid-inline bet">
+                        <span id="betValueSpan" data-value="5" class="no-select white">
+                        </span>
+                    </div>
+                    <div style="grid-column: 3 / span 1;" class="d-grid-inline">
+                        <button class="btn" onclick="onBetDecrease()" type="button">-</button>
+                    </div>
+                    <div style="grid-column: 4 / span 1;" class="d-grid-inline">
+                        <button class="btn" onclick="onBetIncrease()" type="button">+</button>
+                    </div>
+                    <div style="grid-column: 5 / span 4;" class="d-grid-inline">
+                        <button class="btn" onclick="playGame()" type="button">Bet</button>
+                    </div>
+                </div>
+                <div class="d-grid">
+                    <input type="text" id="currentBalanceSpan" style="font-size: 22px;" class="white text-center" data-value="0" disabled="" value="" />
+                </div>
+            </div>
+        </div>
+
+    </div>
+    @Html.AntiForgeryToken()
+    <script>
+        const csrfToken = document.getElementsByName('csrfToken')[0].value;
+    </script>
+    <script>
+        const playGameUrl = '@Url.Action("Play", "Plinko")';
+        const getWalletUrl = '@Url.Action("GetWallet", "Game")';
+    </script>
+    <script src="~/js/plinko/index.js"></script>
+</body>
+</html>

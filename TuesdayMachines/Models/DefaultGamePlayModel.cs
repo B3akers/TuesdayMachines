@@ -2,7 +2,7 @@
 
 namespace TuesdayMachines.Models
 {
-    public class MayanGamePlayModel
+    public class DefaultGamePlayModel
     {
         [RegularExpression("^[a-f\\d]{24}$")]
         [Required]

@@ -27,7 +27,7 @@ namespace TuesdayMachines.Controllers
 
         [HttpGet("Broadcaster/Index")]
         [HttpGet("Broadcaster/Index/{id}")]
-        public async Task<IActionResult> Index(string id)
+        public IActionResult Index(string id)
         {
             return View();
         }

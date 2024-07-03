@@ -324,6 +324,7 @@ class LockedSymbol {
                 const animationEnded = this.time >= this.endTime;
                 if (animationEnded) {
                     boardContainer.removeChild(this.sprite);
+                    this.sprite.destroy();
                     return true;
                 }
 
@@ -361,6 +362,7 @@ class LockedSymbol {
                 const animationEnded = this.time >= this.endTime;
                 if (animationEnded) {
                     boardContainer.removeChild(this.sprite);
+                    this.sprite.destroy();
                     return true;
                 }
 
@@ -371,6 +373,10 @@ class LockedSymbol {
                     const texture = new Texture(gameAssets.winAnim.texture.baseTexture);
                     texture.frame = new Rectangle(256 * animIndex, 0, 256, 256);
                     texture.updateUvs();
+
+                    if (this.sprite.texture) {
+                        this.sprite.texture.destroy();
+                    }
 
                     this.sprite.texture = texture;
 
@@ -398,8 +404,11 @@ class LockedSymbol {
 
     remove() {
         boardContainer.removeChild(this.sprite);
+        this.sprite.destroy();
+
         if (this.lockedSprite) {
             boardContainer.removeChild(this.lockedSprite);
+            this.lockedSprite.destroy();
         }
     }
 }
@@ -709,6 +718,7 @@ async function playGame() {
     const element = document.getElementById('betValueSpan');
     let index = betsAllowedValues.findIndex((value) => value == element.dataset.value);
     if (index == -1) {
+        isPlaying = false;
         return;
     }
 
