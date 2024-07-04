@@ -11,6 +11,8 @@ namespace TuesdayMachines.Interfaces
 
     public interface IUserFairPlay
     {
+        Task<RouletteActiveSeedDTO> GetCurrentLiveRouletteRoundInfo();
+        Task<UserSeedRoundInfo> GetNextLiveRouletteRoundInfo();
         Task<UserSeedRoundInfo> GetUserSeedRoundInfo(string accountId);
         Task<UserSeedDTO> GetCurrentUserSeedInfo(string accountId);
         Task<Tuple<string, string>> ChangeUserSeed(string accountId, string clientSeed);

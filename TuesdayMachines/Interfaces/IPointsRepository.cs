@@ -9,13 +9,19 @@ namespace TuesdayMachines.Interfaces
         public long value;
     };
 
+    public struct PointOperationResult
+    {
+        public bool Success;
+        public long Balance;
+    };
+
     public interface IPointsRepository
     {
-        Task SetPoints(string twitchUserId, string broadcasterAccountId, long value);
-        Task AddPoints(string twitchUserId, string broadcasterAccountId, long value);
-        Task AddPoints(List<PointModifyCommand> users, string broadcasterAccountId);
-        Task<bool> TakePoints(string twitchUserId, string broadcasterAccountId, long value);
-        Task<long> GetBalance(string twitchUserId, string broadcasterAccountId);
+        void SetPoints(string twitchUserId, string broadcasterAccountId, long value);
+        void AddPoints(string twitchUserId, string broadcasterAccountId, long value);
+        void AddPoints(List<PointModifyCommand> users, string broadcasterAccountId);
+        PointOperationResult TakePoints(string twitchUserId, string broadcasterAccountId, long value);
+        Task<PointOperationResult> GetBalance(string twitchUserId, string broadcasterAccountId);
         Task<IAsyncCursor<WalletDTO>> GetUserWallets(string twitchUserId);
     }
 }

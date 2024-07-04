@@ -5,6 +5,7 @@ using MongoDB.Driver;
 using TuesdayMachines.Models;
 using TuesdayMachines.Utils;
 using System.Runtime.InteropServices;
+using System.Drawing;
 
 namespace TuesdayMachines.Controllers
 {
@@ -42,10 +43,10 @@ namespace TuesdayMachines.Controllers
             if (!ModelState.IsValid)
                 return Json(new { error = "invalid_model" });
 
-            if (model.Time < DateTimeOffset.UtcNow.AddMonths(-1).ToUnixTimeSeconds())
+            if (model.Time < DateTimeOffset.UtcNow.AddDays(-31).ToUnixTimeSeconds())
                 return Json(new { error = "invalid_model" });
 
-            var result = await _spinsRepository.GetSpinsStatsLogs(model.Time, model.Game, model.Wallet, 10, model.SortByXWin);
+            var result = await _spinsRepository.GetSpinsStatsLogs(model.Time, model.Game, model.Wallet, 15, model.SortByXWin);
             var accounts = await _accountsRepository.GetAccountsById(result.Select(x => x.AccountId));
             var broadcasters = string.IsNullOrEmpty(model.Wallet) ? await _broadcastersRepository.GetBroadcasters(result.DistinctBy(x => x.Wallet).Select(x => x.Wallet)) : new List<Dto.BroadcasterDTO>() { await _broadcastersRepository.GetBroadcasterByAccountId(model.Wallet) };
 
@@ -55,6 +56,27 @@ namespace TuesdayMachines.Controllers
                 accounts = accounts.Select(x => new { x.Id, x.TwitchLogin }),
                 wallets = broadcasters.Select(x => new { id = x.AccountId, x.Login, x.Points })
             });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetServerSeed([FromBody] GetServerSeedModel model)
+        {
+            if (!ModelState.IsValid)
+                return Json(new { error = "invalid_model" });
+
+            if (model.Game == "roulette")
+            {
+                var seed = await _userFairPlay.GetCurrentLiveRouletteRoundInfo();
+                return Json(new
+                {
+                    seed.Nonce,
+                    client = seed.ClientSeed,
+                    server = seed.ServerSeed.HashSHA256(),
+                    nextServer = seed.NextServerSeed.HashSHA256()
+                });
+            }
+
+            return Json(new { error = "invalid_model" });
         }
 
         [HttpGet]
@@ -116,6 +138,10 @@ namespace TuesdayMachines.Controllers
                 return Json(new { redirect = Url.Action("Index", "Mayan", new { wallet = model.Wallet }) });
             else if (model.GameId == "plinko")
                 return Json(new { redirect = Url.Action("Index", "Plinko", new { wallet = model.Wallet }) });
+            else if (model.GameId == "roulette")
+                return Json(new { redirect = Url.Action("Index", "Roulette", new { wallet = model.Wallet }) });
+
+
 
             return Json(new { error = "invalid_model" });
         }

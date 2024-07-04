@@ -45,6 +45,9 @@ namespace TuesdayMachines.Services
 
             await spinsStats.Indexes.CreateOneAsync(new CreateIndexModel<SpinStatDTO>(Builders<SpinStatDTO>.IndexKeys.Ascending(x => x.Datetime).Ascending(x => x.Game).Ascending(x => x.Wallet).Descending(x => x.Win)));
             await spinsStats.Indexes.CreateOneAsync(new CreateIndexModel<SpinStatDTO>(Builders<SpinStatDTO>.IndexKeys.Ascending(x => x.Datetime).Ascending(x => x.Game).Ascending(x => x.Wallet).Descending(x => x.WinX)));
+
+            var activeGames = _databaseService.GetActiveGames();
+            await activeGames.Indexes.CreateOneAsync(new CreateIndexModel<ActiveGameDTO>(Builders<ActiveGameDTO>.IndexKeys.Ascending(x => x.Key), new CreateIndexOptions() { Unique = true }));
         }
 
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

@@ -43,7 +43,7 @@ namespace TuesdayMachines.Services
                 return;
             }
 
-            await games.UpdateOneAsync(x => x.Id == model.Id, Builders<SlotGameDTO>.Update.Set(x => x.Name, model.Name).Set(x => x.Code, model.Code).Set(x => x.Code, model.Code).Set(x => x.Logo, model.Logo).Set(x => x.Metadata, model.Metadata.Split('\n').ToList()));
+            await games.UpdateOneAsync(x => x.Id == model.Id, Builders<SlotGameDTO>.Update.Set(x => x.Name, model.Name).Set(x => x.Code, model.Code).Set(x => x.Color, model.Color).Set(x => x.Logo, model.Logo).Set(x => x.Metadata, model.Metadata.Split('\n').ToList()));
         }
     }
 }

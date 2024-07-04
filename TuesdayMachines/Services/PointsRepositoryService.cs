@@ -15,7 +15,7 @@ namespace TuesdayMachines.Services
             _databaseService = databaseService;
         }
 
-        public Task AddPoints(string twitchUserId, string broadcasterAccountId, long value)
+        public void AddPoints(string twitchUserId, string broadcasterAccountId, long value)
         {
             var wallets = _databaseService.GetWallets();
             var _lock = _locks.GetOrAdd(broadcasterAccountId, new object());
@@ -26,29 +26,35 @@ namespace TuesdayMachines.Services
                     IsUpsert = true
                 });
             }
-
-            return Task.CompletedTask;
         }
 
 
-        public Task<bool> TakePoints(string twitchUserId, string broadcasterAccountId, long value)
+        public PointOperationResult TakePoints(string twitchUserId, string broadcasterAccountId, long value)
         {
             var wallets = _databaseService.GetWallets();
             var _lock = _locks.GetOrAdd(broadcasterAccountId, new object());
-            bool success = false;
+            WalletDTO walletDTO = null;
+
             lock (_lock)
             {
-                var result = wallets.UpdateOne(x => x.TwitchUserId == twitchUserId && x.BroadcasterAccountId == broadcasterAccountId && x.Balance >= value, Builders<WalletDTO>.Update.Inc(x => x.Balance, -value));
-                success = result.ModifiedCount > 0;
+                var filter = Builders<WalletDTO>.Filter;
+                walletDTO = wallets.FindOneAndUpdate(filter.Eq(x => x.TwitchUserId, twitchUserId) & filter.Eq(x => x.BroadcasterAccountId, broadcasterAccountId) & filter.Gte(x => x.Balance, value), Builders<WalletDTO>.Update.Inc(x => x.Balance, -value), new FindOneAndUpdateOptions<WalletDTO>()
+                {
+                    ReturnDocument = ReturnDocument.After
+                });
             }
 
-            return Task.FromResult(success);
+            return new PointOperationResult()
+            {
+                Success = walletDTO != null,
+                Balance = walletDTO != null ? walletDTO.Balance : 0
+            };
         }
 
-        public Task AddPoints(List<PointModifyCommand> users, string broadcasterAccountId)
+        public void AddPoints(List<PointModifyCommand> users, string broadcasterAccountId)
         {
             if (users.Count == 0)
-                return Task.CompletedTask;
+                return;
 
             var wallets = _databaseService.GetWallets();
             var filter = Builders<WalletDTO>.Filter;
@@ -70,8 +76,6 @@ namespace TuesdayMachines.Services
             {
                 wallets.BulkWrite(updates);
             }
-
-            return Task.CompletedTask;
         }
 
         public async Task<IAsyncCursor<WalletDTO>> GetUserWallets(string twitchUserId)
@@ -81,17 +85,17 @@ namespace TuesdayMachines.Services
             return await wallets.FindAsync(x => x.TwitchUserId == twitchUserId);
         }
 
-        public async Task<long> GetBalance(string twitchUserId, string broadcasterAccountId)
+        public async Task<PointOperationResult> GetBalance(string twitchUserId, string broadcasterAccountId)
         {
             var wallets = _databaseService.GetWallets();
             var result = await (await wallets.FindAsync(x => x.TwitchUserId == twitchUserId && x.BroadcasterAccountId == broadcasterAccountId)).FirstOrDefaultAsync();
             if (result == null)
-                return 0;
-
-            return result.Balance;
+                return new PointOperationResult() {Success = false, Balance = 0 };
+           
+            return new PointOperationResult() { Success = true, Balance = result.Balance };
         }
 
-        public Task SetPoints(string twitchUserId, string broadcasterAccountId, long value)
+        public void SetPoints(string twitchUserId, string broadcasterAccountId, long value)
         {
             var wallets = _databaseService.GetWallets();
             var _lock = _locks.GetOrAdd(broadcasterAccountId, new object());
@@ -102,8 +106,6 @@ namespace TuesdayMachines.Services
                     IsUpsert = true
                 });
             }
-
-            return Task.CompletedTask;
         }
     }
 }

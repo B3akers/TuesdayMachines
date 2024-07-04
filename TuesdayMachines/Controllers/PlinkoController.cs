@@ -50,8 +50,8 @@ namespace TuesdayMachines.Controllers
                 return Json(new { error = "invalid_model" });
 
             var account = HttpContext.Items["userAccount"] as Dto.AccountDTO;
-            var result = await _pointsRepository.TakePoints(account.TwitchId, model.Wallet, model.Bet);
-            if (!result)
+            var result = _pointsRepository.TakePoints(account.TwitchId, model.Wallet, model.Bet);
+            if (!result.Success)
                 return Json(new { error = "not_sufficient_funds" });
 
             var roundInfo = await _userFairPlay.GetUserSeedRoundInfo(account.Id);
@@ -59,7 +59,7 @@ namespace TuesdayMachines.Controllers
 
             if (gameResult.TotalWin > 0)
             {
-                await _pointsRepository.AddPoints(account.TwitchId, model.Wallet, gameResult.TotalWin);
+                _pointsRepository.AddPoints(account.TwitchId, model.Wallet, gameResult.TotalWin);
 
                 var X = (double)gameResult.TotalWin / gameResult.Bet;
                 if (X >= 10.0)
@@ -88,7 +88,7 @@ namespace TuesdayMachines.Controllers
             });
             */
 
-            gameResult.CurrentBalance = await _pointsRepository.GetBalance(account.TwitchId, model.Wallet);
+            gameResult.CurrentBalance = (await _pointsRepository.GetBalance(account.TwitchId, model.Wallet)).Balance;
 
             return Json(gameResult);
         }

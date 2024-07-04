@@ -35,6 +35,7 @@ function makeid(length) {
 }
 
 var currentSeed = null;
+var serverSeeds = {};
 
 function updateFairPlaySeeds() {
     const modal = document.getElementById('fairPlayModal');
@@ -47,14 +48,42 @@ function updateFairPlaySeeds() {
     modal.querySelector('input[data-form-name="clientSeed"]').value = makeid(16);
 }
 
+function updateServerFairPlaySeeds(serverSeed) {
+    const currentServerSeed = serverSeeds[serverSeed];
+
+    const modal = document.getElementById('fairPlayServerModal');
+    modal.querySelector('input[name="activeClientSeed"]').value = currentServerSeed.client;
+    modal.querySelector('input[name="activeServerSeed"]').value = currentServerSeed.server;
+    modal.querySelector('input[name="nonceNumber"]').value = currentServerSeed.nonce;
+    modal.querySelector('input[name="nextServerSeed"]').value = currentServerSeed.nextServer;
+}
+
 async function fairPlayClick() {
-    if (!currentSeed) {
-        currentSeed = await getApiGetResult(getCurrentSeedUrl);
+    const game = document.querySelector('.category-selection.show');
+    if (!game) {
+        return;
     }
 
-    updateFairPlaySeeds();
+    const serverSeed = game.dataset.serverSeed;
+    if (serverSeed) {
+        if (!serverSeeds[serverSeed]) {
+            serverSeeds[serverSeed] = await getApiPostResult(getServerSeedUrl, {
+                game: serverSeed
+            });
+        }
 
-    $('#fairPlayModal').modal('show');
+        updateServerFairPlaySeeds(serverSeed);
+
+        $('#fairPlayServerModal').modal('show');
+    } else {
+        if (!currentSeed) {
+            currentSeed = await getApiGetResult(getCurrentSeedUrl);
+        }
+
+        updateFairPlaySeeds();
+
+        $('#fairPlayModal').modal('show');
+    }
 }
 
 function decryptServerResponse(json) {
@@ -64,6 +93,7 @@ function decryptServerResponse(json) {
 
 function onDecryptServerClick() {
     $('#fairPlayModal').modal('hide');
+    $('#fairPlayServerModal').modal('hide');
     $('#decryptServerModal').modal('show');
 }
 
@@ -78,6 +108,18 @@ function playGameResponse(json) {
 
 (async function () {
     showMessagesFromUrl();
+
+    document.querySelectorAll('.category-selection').forEach(x => {
+        const metadata = x.dataset.metadata;
+        if (!metadata) {
+            return;
+        }
+        const parts = metadata.split(',');
+        for (let i = 0; i < parts.length; i++) {
+            const data = parts[i].split(':');
+            x.dataset[data[0]] = data[1];
+        }
+    });
 
     const walletsData = await getApiGetResult(getWalletsUrl);
     if (walletsData) {

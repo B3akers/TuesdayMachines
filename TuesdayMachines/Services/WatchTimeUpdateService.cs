@@ -59,7 +59,7 @@ namespace TuesdayMachines.Services
                                 if (chatters.Data.Length == 0)
                                     break;
 
-                                await _pointsRepository.AddPoints(chatters.Data.Select(x => new PointModifyCommand() { TwitchUserId = x.UserId, value = broadcaster.WatchPoints }).ToList(), account.Id);
+                                _pointsRepository.AddPoints(chatters.Data.Select(x => new PointModifyCommand() { TwitchUserId = x.UserId, value = broadcaster.WatchPoints }).ToList(), account.Id);
 
                                 if (chatters.Pagination == null || string.IsNullOrEmpty(chatters.Pagination.Cursor))
                                     break;

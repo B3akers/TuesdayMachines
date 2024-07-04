@@ -14,6 +14,71 @@ namespace TuesdayMachines.Services
             _databaseService = databaseService;
         }
 
+        public async Task<RouletteActiveSeedDTO> GetCurrentLiveRouletteRoundInfo()
+        {
+            var liveGames = _databaseService.GetActiveGames().OfType<RouletteActiveSeedDTO>();
+            return await (await liveGames.FindAsync(x => x.Key == "roulette")).FirstOrDefaultAsync();
+        }
+
+        public async Task<UserSeedRoundInfo> GetNextLiveRouletteRoundInfo()
+        {
+            var liveGames = _databaseService.GetActiveGames().OfType<RouletteActiveSeedDTO>();
+            var data = await (await liveGames.FindAsync(x => x.Key == "roulette")).FirstOrDefaultAsync();
+            if (data == null)
+            {
+                RouletteActiveSeedDTO activeSeedDTO = new RouletteActiveSeedDTO();
+
+                activeSeedDTO.Key = "roulette";
+                activeSeedDTO.ClientSeed = Randomizer.RandomString(10);
+                activeSeedDTO.ServerSeed = GetUniqueServerSeed();
+                activeSeedDTO.NextServerSeed = GetUniqueServerSeed();
+                activeSeedDTO.Nonce = 0;
+                activeSeedDTO.CreateTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+                await liveGames.InsertOneAsync(activeSeedDTO);
+
+                return new UserSeedRoundInfo()
+                {
+                    Client = activeSeedDTO.ClientSeed,
+                    Server = activeSeedDTO.ServerSeed,
+                    Nonce = activeSeedDTO.Nonce
+                };
+            }
+
+            var delta = DateTimeOffset.UtcNow.ToUnixTimeSeconds() - data.CreateTime;
+            if (delta > TimeSpan.FromDays(1).TotalSeconds)
+            {
+                {
+                    var serverSeeds = _databaseService.GetServerSeeds();
+                    await serverSeeds.InsertOneAsync(new ServerSeedDTO()
+                    {
+                        HashedKey = data.ServerSeed.HashSHA256(),
+                        Key = data.ServerSeed,
+                        CreationTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                    });
+                }
+
+                var nextServerSeed = GetUniqueServerSeed();
+                await liveGames.UpdateOneAsync(x => x.Id == data.Id, Builders<RouletteActiveSeedDTO>.Update.Set(x => x.ServerSeed, data.NextServerSeed).Set(x => x.NextServerSeed, nextServerSeed).Set(x => x.CreateTime, DateTimeOffset.UtcNow.ToUnixTimeSeconds()).Set(x => x.Nonce, 0));
+
+                return new UserSeedRoundInfo()
+                {
+                    Client = data.ClientSeed,
+                    Server = data.NextServerSeed,
+                    Nonce = 0
+                };
+            }
+
+            await liveGames.UpdateOneAsync(x => x.Id == data.Id, Builders<RouletteActiveSeedDTO>.Update.Inc(x => x.Nonce, 1));
+
+            return new UserSeedRoundInfo()
+            {
+                Client = data.ClientSeed,
+                Server = data.ServerSeed,
+                Nonce = data.Nonce + 1
+            };
+        }
+
         public Task<UserSeedRoundInfo> GetUserSeedRoundInfo(string accountId)
         {
             var userSeeds = _databaseService.GetUserSeeds();

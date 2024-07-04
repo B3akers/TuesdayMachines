@@ -103,13 +103,49 @@
     </div>
 </div>
 
+<div class="modal fade" id="fairPlayServerModal" tabindex="-1" aria-labelledby="fairPlayServerLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="fairPlayServerLabel">Fair play (server)</h5>
+                <button type="button" class="btn-close btn-primary" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <div class="mb-1">
+                        <label>Active client seed</label>
+                        <input name="activeClientSeed" type="text" class="form-control" disabled="">
+                    </div>
+
+                    <div class="mb-1">
+                        <label>Active server seed(hashed)</label>
+                        <input name="activeServerSeed" type="text" class="form-control" disabled="">
+                    </div>
+
+                    <div class="mb-1">
+                        <label>Next server seed(hashed)</label>
+                        <input name="nextServerSeed" type="text" class="form-control" disabled="">
+                    </div>
+
+                    <div class="mb-1">
+                        <label>Total bets made with pair</label>
+                        <input name="nonceNumber" type="text" class="form-control" disabled="">
+                    </div>
+                </div>
+                <hr />
+                <a href="#" onclick="onDecryptServerClick()">Here you can decrypt next day seed server</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="container mb-5 footer-padding">
     <main role="main" class="pb-3">
         <div class="row">
 
             @foreach (var game in Model.Games)
 			{
-                <a class="category-selection text-decoration-none col col-md-2" href="javascript:void(0);" role="button" data-category-id="@game.Code" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <a class="category-selection text-decoration-none col col-md-2" href="javascript:void(0);" role="button" data-metadata="@string.Join(',', game.Metadata)" data-category-id="@game.Code" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <div class="text-center">
                         <img class="rounded-5" src="@game.Logo" width="150" height="150">
                     </div>
@@ -129,6 +165,7 @@
     <script>
         const getWalletsUrl = '@Url.Action("GetWallets", "Game")';
         const getCurrentSeedUrl = '@Url.Action("GetCurrentSeed", "Game")';
+        const getServerSeedUrl = '@Url.Action("GetServerSeed", "Game")';   
         const changeSeedUrl = '@Url.Action("ChangeSeed", "Game")';
     </script>
     <script src="~/js/home/index.js"></script>

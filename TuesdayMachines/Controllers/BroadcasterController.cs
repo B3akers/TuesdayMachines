@@ -81,12 +81,12 @@ namespace TuesdayMachines.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> EditAccountWallet([FromBody] EditAccountWalletModel model)
+        public IActionResult EditAccountWallet([FromBody] EditAccountWalletModel model)
         {
             if (!ModelState.IsValid)
                 return Json(new { error = "invalid_model" });
 
-            await _pointsRepository.SetPoints(model.TwitchId, GetRealId(model.Id), model.Points);
+            _pointsRepository.SetPoints(model.TwitchId, GetRealId(model.Id), model.Points);
 
             return Json(new { success = "updated" });
         }

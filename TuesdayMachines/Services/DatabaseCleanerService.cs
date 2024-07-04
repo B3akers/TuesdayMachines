@@ -33,7 +33,7 @@ namespace TuesdayMachines.Services
 
                 try
                 {
-                    await Task.Delay(3600 * 1000 * 24);
+                    await Task.Delay(3600 * 1000 * 24, stoppingToken);
                 }
                 catch { }
             }

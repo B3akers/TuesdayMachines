@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Principal;
 using TuesdayMachines.ActionFilters;
+using Microsoft.Extensions.Localization;
 
 namespace TuesdayMachines.Controllers
 {
@@ -11,6 +12,7 @@ namespace TuesdayMachines.Controllers
         private readonly ITwitchApi _twitchApi;
         private readonly IAccountsRepository _accountRepository;
         private readonly IUserAuthentication _userAuthentication;
+
         public LoginController(ITwitchApi twitchApi, IAccountsRepository accountRepository, IUserAuthentication userAuthentication)
         {
             _twitchApi = twitchApi;

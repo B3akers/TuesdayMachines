@@ -15,6 +15,7 @@ namespace TuesdayMachines.Services
         private IMongoCollection<SpinDTO> _spins;
         private IMongoCollection<SpinStatDTO> _spinsStat;
         private IMongoCollection<SlotGameDTO> _games;
+        private IMongoCollection<ActiveGameDTO> _activeGames;
 
         public DatabaseService(IConfiguration configuration)
         {
@@ -30,11 +31,16 @@ namespace TuesdayMachines.Services
             _spins = mongoDatabase.GetCollection<SpinDTO>("spins");
             _spinsStat = mongoDatabase.GetCollection<SpinStatDTO>("spinsstat");
             _games = mongoDatabase.GetCollection<SlotGameDTO>("games");
+            _activeGames = mongoDatabase.GetCollection<ActiveGameDTO>("activegames");
         }
 
         public IMongoCollection<AccountDTO> GetAccounts()
         {
             return _accounts;
+        }
+        public IMongoCollection<ActiveGameDTO> GetActiveGames()
+        {
+            return _activeGames;
         }
         public IMongoCollection<SlotGameDTO> GetGames()
         {
