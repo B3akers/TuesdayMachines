@@ -138,7 +138,7 @@ namespace TuesdayMachines.Services
                     await _handler.SendToAllInRoom(JsonSerializer.Serialize(result), win.Key);
                 }
 
-                _liveRouletteService.NextCloseBetsTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + 30;
+                _liveRouletteService.NextCloseBetsTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + 20;
 
                 var finalResult = new RouletteGameResult()
                 {
@@ -154,7 +154,7 @@ namespace TuesdayMachines.Services
 
                 try
                 {
-                    await Task.Delay(1000 * 30, stoppingToken);
+                    await Task.Delay(1000 * 20, stoppingToken);
                 }
                 catch { }
             }

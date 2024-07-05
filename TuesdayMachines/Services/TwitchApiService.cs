@@ -103,6 +103,27 @@ namespace TuesdayMachines.Services
             return (result.Data != null && result.Data.Length > 0) ? result.Data[0] : null;
         }
 
+        public async Task<TwitchSubscriptionsResponseModel> TwitchGetSubscriptions(string accessToken, string twitchUserId, string cursor)
+        {
+            var httpClient = _httpClientFactory.CreateClient();
+
+            string parametrs = $"broadcaster_id={twitchUserId}&first=100";
+            if (!string.IsNullOrEmpty(cursor))
+                parametrs += $"&after={cursor}";
+
+            var message = new HttpRequestMessage();
+            message.RequestUri = new Uri($"https://api.twitch.tv/helix/subscriptions?{parametrs}");
+            message.Method = HttpMethod.Get;
+            message.Headers.TryAddWithoutValidation("Authorization", $"Bearer {accessToken}");
+            message.Headers.TryAddWithoutValidation("Client-Id", _configuration["Twitch:ClientId"]);
+
+            var response = await httpClient.SendAsync(message);
+            response.EnsureSuccessStatusCode();
+
+            var stringResponse = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<TwitchSubscriptionsResponseModel>(stringResponse);
+        }
+
         public async Task<TwitchChattersResponseModel> TwitchGetChatters(string accessToken, string twitchUserId, string cursor)
         {
             var httpClient = _httpClientFactory.CreateClient();

@@ -41,7 +41,7 @@ namespace TuesdayMachines.Controllers
         {
             var accounts = await _broadcastersRepositoryService.GetBroadcasters();
 
-            return Json(new { data = await accounts.ToListAsync() });
+            return Json(new { data = accounts });
         }
         [HttpPost]
         [ValidateAntiForgeryToken]

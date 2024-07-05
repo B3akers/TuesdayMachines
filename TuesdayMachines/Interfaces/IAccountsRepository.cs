@@ -9,6 +9,7 @@ namespace TuesdayMachines.Interfaces
         Task<AccountDTO> GetAccountByTwitchLogin(string login);
         Task<AccountDTO> GetAccountById(string id);
         Task<List<AccountDTO>> GetAccountsById(IEnumerable<string> ids);
+        Task<List<AccountDTO>> GetAccountsByTwitchId(IEnumerable<string> ids);
         Task UpdateAccountTokens(string id, TwitchAuthResponseModel token);
     }
 }

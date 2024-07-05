@@ -92,6 +92,18 @@ namespace TuesdayMachines.Controllers
         }
 
         [HttpPost]
+        public IActionResult AddPointsAccountWallet([FromBody] AddPointsAccountWalletModel model)
+        {
+            if (!ModelState.IsValid)
+                return Json(new { error = "invalid_model" });
+
+            _pointsRepository.AddPointsToAll(GetRealId(model.Id), model.Points);
+
+            return Json(new { success = "updated" });
+        }
+
+
+        [HttpPost]
         public async Task<IActionResult> ChangePointsSettings([FromBody] ChangeBroadcasterSettingsModel model)
         {
             if (!ModelState.IsValid)

@@ -97,10 +97,10 @@ namespace TuesdayMachines.Services
                     {
                         if (bet.Key == number)
                         {
-                            if (isColorBet && bet.Value + placeBet.Amount > 30000)
+                            if (isColorBet && bet.Value + placeBet.Amount > 50000)
                                 return null;
 
-                            if (!isColorBet && bet.Value + placeBet.Amount > 5000)
+                            if (!isColorBet && bet.Value + placeBet.Amount > 10000)
                                 return null;
 
                             currentValue = bet.Value;

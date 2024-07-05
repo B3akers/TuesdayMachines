@@ -57,6 +57,9 @@ namespace TuesdayMachines.WebSockets
 
         [JsonPropertyName("betClosed")]
         public bool BetClosed { get; set; }
+
+        [JsonPropertyName("myBets")]
+        public ConcurrentDictionary<string, long> MyBets { get; set; }
     };
 
     public struct RouletteGamePlayerWin
@@ -338,6 +341,14 @@ namespace TuesdayMachines.WebSockets
                         state.Nonce = _liveRouletteService.LastNonce;
                         state.BetClosed = _liveRouletteService.IsBetClosed;
                         state.Balance = accountBalance.Balance;
+
+                        if (!state.BetClosed)
+                        {
+                            if (_liveRouletteService.PlayersBets.TryGetValue(account.Id, out var myBets))
+                            {
+                                state.MyBets = myBets.Bets;
+                            }
+                        }
 
                         await socket.SendAsync(
                                     new ArraySegment<byte>(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(state))),

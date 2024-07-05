@@ -17,6 +17,8 @@
                 <select id="gameCodeId" onchange="updateStatistics()" class="form-select" required>
                     @foreach (var game in Model.Games)
                     {
+                        if (game.Metadata.Contains("disableStats:1"))
+                            continue;
                         <option value="@game.Code">@game.Name</option>
                     }
                 </select>

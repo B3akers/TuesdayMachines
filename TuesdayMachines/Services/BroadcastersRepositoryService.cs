@@ -45,11 +45,11 @@ namespace TuesdayMachines.Services
             return await (await broadcasters.FindAsync(x => x.AccountId == accountId)).FirstOrDefaultAsync();
         }
 
-        public async Task<IAsyncCursor<BroadcasterDTO>> GetBroadcasters()
+        public async Task<List<BroadcasterDTO>> GetBroadcasters()
         {
             var broadcasters = _databaseService.GetBroadcasters();
 
-            return (await broadcasters.FindAsync(Builders<BroadcasterDTO>.Filter.Empty));
+            return await (await broadcasters.FindAsync(Builders<BroadcasterDTO>.Filter.Empty)).ToListAsync();
         }
 
         public async Task<List<BroadcasterDTO>> GetBroadcasters(IEnumerable<string> broadcasterAccountIds)

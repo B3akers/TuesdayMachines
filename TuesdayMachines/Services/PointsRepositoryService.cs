@@ -2,6 +2,7 @@
 using TuesdayMachines.Interfaces;
 using MongoDB.Driver;
 using TuesdayMachines.Dto;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TuesdayMachines.Services
 {
@@ -90,8 +91,8 @@ namespace TuesdayMachines.Services
             var wallets = _databaseService.GetWallets();
             var result = await (await wallets.FindAsync(x => x.TwitchUserId == twitchUserId && x.BroadcasterAccountId == broadcasterAccountId)).FirstOrDefaultAsync();
             if (result == null)
-                return new PointOperationResult() {Success = false, Balance = 0 };
-           
+                return new PointOperationResult() { Success = false, Balance = 0 };
+
             return new PointOperationResult() { Success = true, Balance = result.Balance };
         }
 
@@ -105,6 +106,32 @@ namespace TuesdayMachines.Services
                 {
                     IsUpsert = true
                 });
+            }
+        }
+
+        public async Task<List<WalletDTO>> GetTopAccounts(string wallet, int limit)
+        {
+            var wallets = _databaseService.GetWallets();
+
+            return await (await wallets.FindAsync(x => x.BroadcasterAccountId == wallet, new FindOptions<WalletDTO>()
+            {
+                Limit = limit,
+                Sort = Builders<WalletDTO>.Sort.Descending(x => x.Balance)
+            })).ToListAsync();
+        }
+
+        public void AddPointsToAll(string broadcasterAccountId, long value)
+        {
+            if (value <= 0)
+            {
+                return;
+            }
+
+            var wallets = _databaseService.GetWallets();
+            var _lock = _locks.GetOrAdd(broadcasterAccountId, new object());
+            lock (_lock)
+            {
+                wallets.UpdateMany(x => x.BroadcasterAccountId == broadcasterAccountId, Builders<WalletDTO>.Update.Inc(x => x.Balance, value));
             }
         }
     }

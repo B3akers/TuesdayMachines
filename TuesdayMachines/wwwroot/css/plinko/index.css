@@ -17,6 +17,10 @@
     user-select: none; /* Standard syntax */
 }
 
+.active-button {
+    background-color: #3b74b7 !important;
+}
+
 .balance {
     background-color: #969fa8;
     text-align: center;

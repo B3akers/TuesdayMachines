@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Collections.Concurrent;
 using System.ComponentModel;
@@ -17,12 +18,14 @@ namespace TuesdayMachines.Controllers
         private readonly IUserFairPlay _userFairPlay;
         private readonly IPointsRepository _pointsRepository;
         private readonly IMinesGame _minesGame;
+        private readonly ISpinsRepository _spinsRepository;
 
-        public MinesController(IUserFairPlay userFairPlay, IPointsRepository pointsRepository, IMinesGame minesGame)
+        public MinesController(IUserFairPlay userFairPlay, IPointsRepository pointsRepository, IMinesGame minesGame, ISpinsRepository spinsRepository)
         {
             _userFairPlay = userFairPlay;
             _pointsRepository = pointsRepository;
             _minesGame = minesGame;
+            _spinsRepository = spinsRepository;
         }
 
         public IActionResult Index()
@@ -126,6 +129,19 @@ namespace TuesdayMachines.Controllers
                         _userFairPlay.RemoveMinesGame(account.Id);
                         _locks.TryRemove(account.Id, out _);
 
+                        if (multi >= 10.0)
+                        {
+                            _spinsRepository.AddSpinStatLog(new Dto.SpinStatDTO()
+                            {
+                                AccountId = account.Id,
+                                Bet = activeGame.Bet,
+                                Game = "mines",
+                                Wallet = activeGame.WalletId,
+                                Win = win,
+                                WinX = (long)multi
+                            });
+                        }
+
                         return Json(new { isMine = false, winnings = win, multiplier = multi });
                     }
 
@@ -147,6 +163,19 @@ namespace TuesdayMachines.Controllers
                     _pointsRepository.AddPoints(account.TwitchId, activeGame.WalletId, win);
                     _userFairPlay.RemoveMinesGame(account.Id);
                     _locks.TryRemove(account.Id, out _);
+
+                    if (multi >= 10.0)
+                    {
+                        _spinsRepository.AddSpinStatLog(new Dto.SpinStatDTO()
+                        {
+                            AccountId = account.Id,
+                            Bet = activeGame.Bet,
+                            Game = "mines",
+                            Wallet = activeGame.WalletId,
+                            Win = win,
+                            WinX = (long)multi
+                        });
+                    }
 
                     return Json(new { winnings = win, multiplier = multi, mines = activeGame.Bombs, picked = activeGame.Picked });
                 }

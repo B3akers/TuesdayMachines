@@ -76,6 +76,7 @@ async function showImage(event) {
         if (data.isMine) {
             revealAll(data.mines, data.picked);
             square.style.backgroundImage = "url('../assets/mines/bomb.png')"; // Bomb
+            bombSound.volume = 0.1;
             bombSound.play();
             displayResult('lost');
             document.getElementById('bet-button').innerText = 'Bet';
@@ -83,6 +84,7 @@ async function showImage(event) {
             gameStarted = false;
         } else {
             square.style.backgroundImage = "url('../assets/mines/coin.png')"; // Safe
+            clickSound.volume = 0.2;
             clickSound.play();
             openedSafeSquares++;
             square.classList.add('clicked');
@@ -196,6 +198,13 @@ async function startGame() {
     gameStarting = false;
 }
 
+window.addEventListener('keydown', function (e) {
+    if (e.keyCode == 32) {
+        startGame();
+        e.preventDefault();
+    }
+});
+
 async function cashout() {
     if (gameStarting || openedSafeSquares == 0) {
         return;
@@ -275,7 +284,10 @@ async function loadPage() {
 
     walletName = walletInfo.name;
     setBalance(walletInfo.balance);
-    
+
+    document.querySelectorAll('.pointsName').forEach(x => {
+        x.innerText = `[${walletName}]`;
+    });
 
     await fetchGameData();
 }

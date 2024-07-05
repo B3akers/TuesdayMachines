@@ -46,7 +46,9 @@
                 </p>
             </div>
         </div>
-        <button class="btn btn-spin" type="button" onclick="playGameOrFastSpinOnce()">SPIN</button>
+        <div class="grid-container">
+            <button style="grid-column: 1 / span 18;" class="btn btn-spin" type="button" onclick="playGameOrFastSpinOnce()">SPIN</button>
+        </div>
         <div class="align-right">
             <input type="range" min="0" max="100" value="100" step="1" oninput="onAudioVolumeChange(this.value)" onchange="onAudioVolumeChange(this.value)" />
         </div>

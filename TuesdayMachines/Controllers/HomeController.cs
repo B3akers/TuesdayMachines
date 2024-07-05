@@ -24,15 +24,22 @@ namespace TuesdayMachines.Controllers
         public async Task<IActionResult> Index()
         {
             HomeIndexModel model = new HomeIndexModel();
-            model.Games = await (await _gamesRepository.GetGames()).ToListAsync();
+            model.Games = await _gamesRepository.GetGames();
+            return View(model);
+        }
+
+        public async Task<IActionResult> Ranking()
+        {
+            HomeRankingModel model = new HomeRankingModel();
+            model.Broadcasters = await _broadcastersRepository.GetBroadcasters();
             return View(model);
         }
 
         public async Task<IActionResult> Statistics()
         {
             HomeIndexModel model = new HomeIndexModel();
-            model.Games = await (await _gamesRepository.GetGames()).ToListAsync();
-            model.Broadcasters = await (await _broadcastersRepository.GetBroadcasters()).ToListAsync();
+            model.Games = await _gamesRepository.GetGames();
+            model.Broadcasters = await _broadcastersRepository.GetBroadcasters();
             return View(model);
         }
 

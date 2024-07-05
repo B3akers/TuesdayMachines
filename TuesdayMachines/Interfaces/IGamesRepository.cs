@@ -6,7 +6,7 @@ namespace TuesdayMachines.Interfaces
 {
     public interface IGamesRepository
     {
-        Task<IAsyncCursor<SlotGameDTO>> GetGames();
+        Task<List<SlotGameDTO>> GetGames();
         Task DeleteGame(string id);
         Task UpdateOrCreateGame(AddGameModel model);
     }

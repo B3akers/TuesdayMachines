@@ -63,6 +63,12 @@ namespace TuesdayMachines.Services
             return await (await accounts.FindAsync(Builders<AccountDTO>.Filter.In(x => x.Id, ids))).ToListAsync();
         }
 
+        public async Task<List<AccountDTO>> GetAccountsByTwitchId(IEnumerable<string> ids)
+        {
+            var accounts = _databaseService.GetAccounts();
+            return await (await accounts.FindAsync(Builders<AccountDTO>.Filter.In(x => x.TwitchId, ids))).ToListAsync();
+        }
+
         public async Task UpdateAccountTokens(string id, TwitchAuthResponseModel token)
         {
             var accounts = _databaseService.GetAccounts();

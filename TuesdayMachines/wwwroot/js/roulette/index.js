@@ -30,8 +30,11 @@ const audioAssets = {
     click: '../assets/plinko/click.wav'
 };
 
-function playAudio(src) {
+function playAudio(src, volume) {
     const audio = new Audio(src);
+    if (volume) {
+        audio.volume = volume;
+    }
     audio.play();
 }
 
@@ -119,6 +122,26 @@ function addToBalance(value) {
     session.innerText = sessionBalance.toLocaleString();
 }
 
+function addMyBetToBoard(number, amount) {
+    const e = document.querySelector('.horizontalBetBoard [data-bet="' + number + '"]');
+    let playerCoin = e.querySelector('.coinOnNumber');
+    if (!playerCoin) {
+        playerCoin = document.createElement('div');
+        playerCoin.classList.add('coin', 'coinOnNumber', 'red2', 'no-select');
+        playerCoin.dataset.value = 0;
+
+        e.appendChild(playerCoin);
+    }
+    playerCoin.dataset.value = +playerCoin.dataset.value + amount;
+    playerCoin.innerText = playerCoin.dataset.value;
+
+    if (!currentRoundBets[number]) {
+        currentRoundBets[number] = 0;
+    }
+
+    currentRoundBets[number] += +amount;
+}
+
 function initWebsocketConnection() {
     if (!walletId) {
         return;
@@ -147,6 +170,16 @@ function initWebsocketConnection() {
             clearBets();
             clearWinners();
 
+            currentRoundBets = {};
+
+            if (packet.myBets) {
+                const keys = Object.keys(packet.myBets);
+                for (let i = 0; i < keys.length; i++) {
+                    const number = keys[i];
+                    addMyBetToBoard(number, packet.myBets[number]);
+                }
+            }
+
             for (let i = 0; i < packet.lastResults.length; i++) {
                 const item = packet.lastResults[i];
                 addLastResult(item);
@@ -171,26 +204,10 @@ function initWebsocketConnection() {
         } else if (packet.id == 'bet_closed') {
             betClosed = packet.betClosed;
         } else if (packet.id == 'game_bet') {
-            const e = document.querySelector('.horizontalBetBoard [data-bet="' + packet.number + '"]');
-
             if (packet.accountId == myAccountId) {
-                let playerCoin = e.querySelector('.coinOnNumber');
-                if (!playerCoin) {
-                    playerCoin = document.createElement('div');
-                    playerCoin.classList.add('coin', 'coinOnNumber', 'red2', 'no-select');
-                    playerCoin.dataset.value = 0;
-
-                    e.appendChild(playerCoin);
-                }
-                playerCoin.dataset.value = +playerCoin.dataset.value + packet.amount;
-                playerCoin.innerText = playerCoin.dataset.value;
-
-                if (!currentRoundBets[packet.number]) {
-                    currentRoundBets[packet.number] = 0;
-                }
-
-                currentRoundBets[packet.number] += +packet.amount;
+                addMyBetToBoard(packet.number, packet.amount);
             } else {
+                const e = document.querySelector('.horizontalBetBoard [data-bet="' + packet.number + '"]');
                 let span = e.querySelector('span.tooltiptext');
                 if (!span) {
                     span = document.createElement('span');
@@ -351,11 +368,11 @@ function tryPlaceBet(betNumber, betValue) {
     const currentCoin = e.querySelector('.coinOnNumber');
     if (currentCoin) {
         const final = +currentCoin.dataset.value + betValue;
-        if (betNumber != 'black' && betNumber != 'red' && final > 5000) {
+        if (betNumber != 'black' && betNumber != 'red' && final > 10000) {
             return false;
         }
 
-        if ((betNumber == 'black' || betNumber == 'red') && final > 30000) {
+        if ((betNumber == 'black' || betNumber == 'red') && final > 50000) {
             return false;
         }
     }
@@ -393,7 +410,7 @@ function onPlaceBet(e) {
     const betValue = +selectedCoin.dataset.bet;
 
     if (tryPlaceBet(betNumber, betValue)) {
-        playAudio(audioAssets.click);
+        playAudio(audioAssets.click, 0.2);
     }
 }
 function repeatBets() {

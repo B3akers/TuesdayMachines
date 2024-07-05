@@ -18,11 +18,11 @@ namespace TuesdayMachines.Services
             await _databaseService.GetGames().DeleteOneAsync(x => x.Id == id);
         }
 
-        public async Task<IAsyncCursor<SlotGameDTO>> GetGames()
+        public async Task<List<SlotGameDTO>> GetGames()
         {
             var games = _databaseService.GetGames();
 
-            return (await games.FindAsync(Builders<SlotGameDTO>.Filter.Empty));
+            return await (await games.FindAsync(Builders<SlotGameDTO>.Filter.Empty)).ToListAsync();
         }
 
         public async Task UpdateOrCreateGame(AddGameModel model)

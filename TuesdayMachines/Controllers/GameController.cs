@@ -34,8 +34,30 @@ namespace TuesdayMachines.Controllers
         {
             var games = await _gamesRepository.GetGames();
 
-            return Json(new { data = await games.ToListAsync() });
+            return Json(new { data = games });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> GetAccountsRanking([FromBody] IdModel model)
+        {
+            if (!ModelState.IsValid)
+                return Json(new { error = "invalid_model" });
+
+            var broadcaster = await _broadcastersRepository.GetBroadcasterByAccountId(model.Id);
+            if (broadcaster == null)
+                return Json(new { error = "invalid_model" });
+
+            var result = await _pointsRepository.GetTopAccounts(broadcaster.AccountId, 100);
+            var accounts = await _accountsRepository.GetAccountsByTwitchId(result.Select(x => x.TwitchUserId));
+
+            return Json(new
+            {
+                data = result,
+                accounts = accounts.Select(x => new { id = x.TwitchId, x.TwitchLogin }),
+                wallet = new { id = broadcaster.AccountId, broadcaster.Login, broadcaster.Points }
+            });
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> GetSpinsStats([FromBody] GetSpinsStatsModel model)

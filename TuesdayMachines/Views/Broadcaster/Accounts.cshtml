@@ -50,9 +50,36 @@
     </div>
 </div>
 
+
+<div class="modal fade" id="broadcasterAddPointsModal" tabindex="-1" aria-labelledby="broadcasterAddPointsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="broadcasterAddPointsModalLabel">Add points to all accounts</h5>
+                <button type="button" class="btn-close btn-primary" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="p-2" data-url="@Url.Action("AddPointsAccountWallet","Broadcaster")">
+                    <div class="mb-1">
+                        <label>Points value</label>
+                        <input data-form-name="points" type="number" class="form-control">
+                    </div>
+                    <input type="hidden" data-form-name="id" value="@Model.AccountId" />
+                    <div class="mb-1">
+                        <button type="submit" class="btn btn-primary mt-2">Set</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="container footer-padding mb-5">
     <main role="main" class="pb-3">
         <div class="p-3">
+            <div class="mb-3 d-grid gap-2 d-md-flex justify-content-md-end">
+                <button type="button" data-bs-toggle="modal" data-bs-target="#broadcasterAddPointsModal" class="btn btn-primary mt-2 float-end">Add points to all</button>
+            </div>
             <table id="accountsTable" class="table table-striped" style="width:100%">
                 <thead>
                     <tr>

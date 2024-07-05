@@ -9,5 +9,6 @@ namespace TuesdayMachines.Interfaces
         Task<TwitchStreamResponseModel> TwitchGetUserStremInfo(string accessToken, string userId);
         Task<TwitchAuthResponseModel> TwitchRefreshToken(string refreshToken);
         Task<TwitchChattersResponseModel> TwitchGetChatters(string accessToken, string twitchUserId, string cursor);
+        Task<TwitchSubscriptionsResponseModel> TwitchGetSubscriptions(string accessToken, string twitchUserId, string cursor);
     }
 }

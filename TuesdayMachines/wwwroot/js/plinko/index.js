@@ -12,6 +12,7 @@ const Texture = PIXI.Texture;
 const BitmapText = PIXI.BitmapText;
 
 var app;
+var autoPlayInterval;
 
 var heightLength;
 var widthLength;
@@ -114,7 +115,7 @@ function createBox(i) {
     box.style.width = `${widthLength - ballRadius * 1.5}px`;
     box.style.height = box.style.width;
     box.style.background = color;
-    
+
     span.innerText = `${payoutTable[i]}` + (payoutTable[i] < 100 ? '\xD7' : '');
     box.appendChild(span);
 
@@ -341,7 +342,7 @@ function changeRows(count) {
     const width = app.canvas.width;
 
     heightLength = height / (count + 1);
-    widthLength = width/ (count + 2);
+    widthLength = width / (count + 2);
     ballRadius = Math.floor(widthLength / 6);
 
     {
@@ -445,6 +446,7 @@ async function playGame(isButton) {
         const json = await response.json();
 
         if (json.error) {
+            disableAutoPlay();
             alert(json.error);
             console.error(json.error);
             isPlaying = false;
@@ -478,6 +480,26 @@ setInterval(function () {
         x.classList.remove('winnerBoxAnim');
     });
 }, 15000);
+
+function enableAutoPlay() {
+    const e = document.getElementById('autoPlayButton');
+    autoPlayInterval = setInterval(playGame, 500);
+    e.classList.add('active-button');
+}
+function disableAutoPlay() {
+    const e = document.getElementById('autoPlayButton');
+    clearInterval(autoPlayInterval);
+    autoPlayInterval = null;
+    e.classList.remove('active-button');
+}
+
+function switchAutoPlay() {
+    if (autoPlayInterval) {
+        disableAutoPlay();
+    } else {
+        enableAutoPlay();
+    }
+}
 
 (async function () {
     const searchParams = new URLSearchParams(window.location.search);
