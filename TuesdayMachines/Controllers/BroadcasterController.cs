@@ -69,7 +69,7 @@ namespace TuesdayMachines.Controllers
             return Json(new
             {
                 model.TwitchId,
-                balance
+                balance = balance.Balance
             });
         }
 

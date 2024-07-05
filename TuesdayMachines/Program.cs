@@ -37,6 +37,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddSingleton<DatabaseService>();
 builder.Services.AddSingleton<IMayanGame, MayanGameService>();
 builder.Services.AddSingleton<IPlinkoGame, PlinkoGameService>();
+builder.Services.AddSingleton<IMinesGame, MinesGameService>();
 builder.Services.AddSingleton<IAccountsRepository, AccountsRepositoryService>();
 builder.Services.AddSingleton<ITwitchApi, TwitchApiService>();
 builder.Services.AddSingleton<IUserAuthentication, UserAuthenticationService>();

@@ -24,6 +24,17 @@ var lastRoundBets = {};
 
 var otherPlayersBets = {};
 
+const audioAssets = {
+    ball: '../assets/roulette/ball.wav',
+    win: '../assets/roulette/win.wav',
+    click: '../assets/plinko/click.wav'
+};
+
+function playAudio(src) {
+    const audio = new Audio(src);
+    audio.play();
+}
+
 function keepAliveWebSocket() {
     webSocketClient.send('#1');
 }
@@ -93,6 +104,19 @@ function addToBalance(value) {
     const balance = +value + +(element.dataset.value ?? 0);
     element.dataset.value = balance;
     element.innerText = balance.toLocaleString();
+
+    const session = document.getElementById('currentSessionSpan');
+    let sessionBalance = +(session.dataset.value ?? 0);
+
+    sessionBalance += +value;
+
+    if (sessionBalance != 0)
+        session.style.color = sessionBalance > 0 ? 'green' : 'red';
+    else
+        session.style.color = 'white';
+
+    session.dataset.value = sessionBalance;
+    session.innerText = sessionBalance.toLocaleString();
 }
 
 function initWebsocketConnection() {
@@ -209,6 +233,17 @@ function initWebsocketConnection() {
 
                     if (winner.twitchId == myTwitchId) {
                         addToBalance(winner.win);
+
+                        playAudio(audioAssets.win);
+
+                        document.getElementById('mainDisplay').classList.add('grayscale-full');
+                        document.querySelector('.myWin').classList.remove('d-none');
+                        document.querySelector('.myWin span').innerText = winner.win.toLocaleString();
+
+                        setTimeout(function () {
+                            document.getElementById('mainDisplay').classList.remove('grayscale-full');
+                            document.querySelector('.myWin').classList.add('d-none');
+                        }, 2500);
                     }
 
                     const div = document.createElement('div');
@@ -246,6 +281,8 @@ function rouletteSpin(randomNumber) {
     $inner.attr('data-spinto', randomNumber).find('li:nth-child(' + randomNumber + ') input').prop('checked', 'checked');
 
     $('.placeholder').remove();
+
+    playAudio(audioAssets.ball);
 
     setTimeout(function () {
         if ($.inArray(randomNumber, red) !== -1) { color = 'red'; } else { color = 'black'; };
@@ -307,7 +344,7 @@ function tryPlaceBet(betNumber, betValue) {
     const balance = +(document.getElementById('balanceSpan').dataset.value ?? 0);
 
     if (betValue > balance) {
-        return;
+        return false;
     }
 
     const e = document.querySelector('.horizontalBetBoard [data-bet="' + betNumber + '"]');
@@ -315,11 +352,11 @@ function tryPlaceBet(betNumber, betValue) {
     if (currentCoin) {
         const final = +currentCoin.dataset.value + betValue;
         if (betNumber != 'black' && betNumber != 'red' && final > 5000) {
-            return;
+            return false;
         }
 
         if ((betNumber == 'black' || betNumber == 'red') && final > 30000) {
-            return;
+            return false;
         }
     }
 
@@ -329,7 +366,7 @@ function tryPlaceBet(betNumber, betValue) {
     });
 
     if (totalBets > 100000) {
-        return;
+        return false;
     }
 
     addToBalance(-betValue);
@@ -339,6 +376,8 @@ function tryPlaceBet(betNumber, betValue) {
         number: betNumber,
         amount: betValue
     }));
+
+    return true;
 }
 
 function onPlaceBet(e) {
@@ -353,10 +392,15 @@ function onPlaceBet(e) {
     const betNumber = e.dataset.bet;
     const betValue = +selectedCoin.dataset.bet;
 
-    tryPlaceBet(betNumber, betValue);
+    if (tryPlaceBet(betNumber, betValue)) {
+        playAudio(audioAssets.click);
+    }
 }
 function repeatBets() {
     const keys = Object.keys(lastRoundBets);
+    if (keys.length > 0) {
+        playAudio(audioAssets.click);
+    }
     for (let i = 0; i < keys.length; i++) {
         const betNumber = keys[i];
         const betValue = lastRoundBets[betNumber];

@@ -17,6 +17,8 @@ namespace TuesdayMachines.Dto
     {
         [BsonRepresentation(BsonType.ObjectId)]
         public string AccountId { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string WalletId { get; set; }
         public long Bet { get; set; }
         public int[] Picked { get; set; }
         public int[] Bombs { get; set; }

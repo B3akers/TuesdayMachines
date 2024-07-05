@@ -9,7 +9,7 @@ namespace TuesdayMachines.Controllers
     [TypeFilter(typeof(HomeActionFilter))]
     public class PlinkoController : Controller
     {
-        private readonly long[] _betsAllowedValues = [5, 10, 25, 50, 100, 150, 250, 500, 1000, 1500, 2000, 5000, 10000, 15000, 20000];
+        private static readonly long[] _betsAllowedValues = [5, 10, 25, 50, 100, 150, 250, 500, 1000, 1500, 2000, 5000, 10000, 15000, 20000];
         private readonly IPlinkoGame _plinkoGame;
         private readonly IPointsRepository _pointsRepository;
         private readonly IUserFairPlay _userFairPlay;
@@ -54,7 +54,7 @@ namespace TuesdayMachines.Controllers
             if (!result.Success)
                 return Json(new { error = "not_sufficient_funds" });
 
-            var roundInfo = await _userFairPlay.GetUserSeedRoundInfo(account.Id);
+            var roundInfo = _userFairPlay.GetUserSeedRoundInfo(account.Id);
             var gameResult = _plinkoGame.SimulateGame(roundInfo.Client, roundInfo.Server, roundInfo.Nonce, model.Bet);
 
             if (gameResult.TotalWin > 0)

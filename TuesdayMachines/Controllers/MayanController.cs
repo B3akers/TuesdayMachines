@@ -56,7 +56,7 @@ namespace TuesdayMachines.Controllers
             if (!result.Success)
                 return Json(new { error = "not_sufficient_funds" });
 
-            var roundInfo = await _userFairPlay.GetUserSeedRoundInfo(account.Id);
+            var roundInfo = _userFairPlay.GetUserSeedRoundInfo(account.Id);
             var gameResult = _mayanGame.SimulateGame(roundInfo.Client, roundInfo.Server, roundInfo.Nonce, model.Bet);
 
             if (gameResult.TotalWin > 0)

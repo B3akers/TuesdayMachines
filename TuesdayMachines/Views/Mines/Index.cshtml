@@ -1,0 +1,83 @@
+﻿﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Page</title>
+    <link rel="stylesheet" href="~/css/mines/index.css" />
+</head>
+<body>
+    <div class="container">
+        <div class="settings">
+            <div class="mode-switch">
+                <span class="mode-text">Mines</span>
+            </div>
+            <div class="bet-amount">
+                <label for="bet-amount">Bet Amount</label>
+                <input type="text" id="bet-amount" value="5" disabled="">
+                <div class="bet-controls">
+                    <button class="bet-control-button" onclick="modifyBetAmount(-1)">-</button>
+                    <button class="bet-control-button" onclick="modifyBetAmount(1)">+</button>
+                </div>
+            </div>
+            <div class="mines">
+                Current balance:
+                <span id="currentBalacne"></span>
+            </div>
+            <div class="mines">
+                Current session:
+                <span id="currentSession"></span>
+            </div>
+            <div class="mines">
+                <label for="mines">Mines</label>
+                <select id="mines">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3" selected>3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                    <option value="13">13</option>
+                    <option value="14">14</option>
+                    <option value="15">15</option>
+                    <option value="16">16</option>
+                    <option value="17">17</option>
+                    <option value="18">18</option>
+                    <option value="19">19</option>
+                    <option value="20">20</option>
+                    <option value="21">21</option>
+                    <option value="22">22</option>
+                    <option value="23">23</option>
+                    <option value="24">24</option>
+                </select>
+            </div>
+            <button class="bet-button" id="bet-button" onclick="startGame()">Bet</button>
+        </div>
+        <div class="grid" id="grid"></div>
+        <div class="message" id="message">Congratulations! All safe squares opened!</div>
+        <div class="result" id="result"></div>
+    </div>
+
+    <audio id="click-sound" src="~/assets/mines/click.wav"></audio>
+    <audio id="bomb-sound" src="~/assets/mines/bomb.wav"></audio>
+    @Html.AntiForgeryToken()
+    <script>
+        const csrfToken = document.getElementsByName('csrfToken')[0].value;
+    </script>
+    <script>
+        const playGameUrl = '@Url.Action("Play", "Mines")';
+        const getWalletUrl = '@Url.Action("GetWallet", "Game")';
+    </script>
+    <script src="~/js/mines/index.js"></script>
+</body>
+</html>

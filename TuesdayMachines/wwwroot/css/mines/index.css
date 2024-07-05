@@ -1,0 +1,163 @@
+﻿body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #202b39;
+    color: #ffffff;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    position: relative;
+}
+
+.settings {
+    background-color: #2d3e50;
+    padding: 20px;
+    border-radius: 10px;
+    margin-right: 20px;
+}
+
+.mode-switch {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.mode-text {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #3a4c61;
+    padding: 10px 20px;
+    border-radius: 6px;
+}
+
+.mode-button.active {
+    background-color: #1a2533;
+}
+
+.bet-amount, .mines {
+    margin-bottom: 20px;
+}
+
+    .bet-amount label, .mines label {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .bet-amount input {
+        width: calc(100% - 20px);
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #1a2533;
+        border: none;
+        color: #ffffff;
+        border-radius: 5px;
+    }
+
+    .mines select {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #1a2533;
+        border: none;
+        color: #ffffff;
+        border-radius: 5px;
+    }
+
+.bet-controls {
+    display: flex;
+    justify-content: space-between;
+}
+
+.bet-control-button {
+    background-color: #3a4c61;
+    color: #ffffff;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 48%;
+}
+
+.bet-button {
+    width: 100%;
+    background-color: #28a745;
+    color: #ffffff;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
+
+.grid-square {
+    width: 60px;
+    height: 60px;
+    background-color: #3a4c61;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+    .grid-square:hover {
+        background-color: #5a6c81;
+    }
+
+    .grid-square.clicked {
+        animation: click-animation 0.5s forwards;
+    }
+
+@keyframes click-animation {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.message {
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 20px;
+    text-align: center;
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px 20px;
+    border-radius: 10px;
+    display: none;
+}
+
+.darker {
+    filter: brightness(50%);
+}
+
+.result {
+    position: absolute;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-align: center;
+    display: none;
+}

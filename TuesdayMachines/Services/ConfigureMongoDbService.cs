@@ -29,6 +29,7 @@ namespace TuesdayMachines.Services
 
             var wallets = _databaseService.GetWallets();
             await wallets.Indexes.CreateOneAsync(new CreateIndexModel<WalletDTO>(Builders<WalletDTO>.IndexKeys.Ascending(x => x.TwitchUserId).Ascending(x => x.BroadcasterAccountId), new CreateIndexOptions() { Unique = true }));
+            await wallets.Indexes.CreateOneAsync(new CreateIndexModel<WalletDTO>(Builders<WalletDTO>.IndexKeys.Ascending(x => x.BroadcasterAccountId).Descending(x => x.Balance)));
 
             var serverSeeds = _databaseService.GetServerSeeds();
             await serverSeeds.Indexes.CreateOneAsync(new CreateIndexModel<ServerSeedDTO>(Builders<ServerSeedDTO>.IndexKeys.Ascending(x => x.HashedKey), new CreateIndexOptions() { Unique = true }));

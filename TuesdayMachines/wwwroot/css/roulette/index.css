@@ -1,6 +1,9 @@
 ﻿.horizontalBetBoard {
     margin: 1rem;
     min-width: 720px;
+    max-width: 1700px;
+    margin: auto;
+    margin-bottom: 20px;
     display: grid;
     color: white;
     text-align: center;
@@ -11,9 +14,28 @@
         'blank blank blank blank red red red black black black blank2 blank2 blank2';
 }
 
+.grayscale-full {
+    -webkit-filter: grayscale(100%);
+    -moz-filter: grayscale(100%);
+    filter: grayscale(100%);
+}
+
+.myWin {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    color:white;
+    font-size: 60px;
+    background-color: red;
+    z-index: 9999;
+    border-radius: 50%;
+    padding: 2rem;
+    transform: translate(-50%, -50%);
+}
+
 .currentWinners {
     position: absolute;
-    right: 1rem;
+    right: 2rem;
     color: green;
     font-size: 22px;
 }
@@ -115,7 +137,7 @@
 
 .clientsStats {
     position: absolute;
-    left: 0.2rem;
+    left: 2rem;
     color: white;
     font-size: 19px;
 }
@@ -134,7 +156,7 @@
 }
 
 .horizontalBetNumber:has(span.tooltiptext) {
-    border: 3px solid yellow !important;
+    border: 2px dashed white;
 }
 
 .horizontalBetNumber {

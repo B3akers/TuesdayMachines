@@ -140,8 +140,8 @@ namespace TuesdayMachines.Controllers
                 return Json(new { redirect = Url.Action("Index", "Plinko", new { wallet = model.Wallet }) });
             else if (model.GameId == "roulette")
                 return Json(new { redirect = Url.Action("Index", "Roulette", new { wallet = model.Wallet }) });
-
-
+            else if (model.GameId == "mines")
+                return Json(new { redirect = Url.Action("Index", "Mines", new { wallet = model.Wallet }) });
 
             return Json(new { error = "invalid_model" });
         }
@@ -159,7 +159,7 @@ namespace TuesdayMachines.Controllers
             var account = HttpContext.Items["userAccount"] as Dto.AccountDTO;
             var balance = await _pointsRepository.GetBalance(account.TwitchId, broadcaster.AccountId);
 
-            return Json(new { balance, name = broadcaster.Points });
+            return Json(new { balance = balance.Balance, name = broadcaster.Points });
         }
 
         public async Task<IActionResult> GetWallets()

@@ -79,7 +79,7 @@ namespace TuesdayMachines.Services
             };
         }
 
-        public Task<UserSeedRoundInfo> GetUserSeedRoundInfo(string accountId)
+        public UserSeedRoundInfo GetUserSeedRoundInfo(string accountId)
         {
             var userSeeds = _databaseService.GetUserSeeds();
 
@@ -100,12 +100,12 @@ namespace TuesdayMachines.Services
                 }
             }
 
-            return Task.FromResult(new UserSeedRoundInfo()
+            return new UserSeedRoundInfo()
             {
                 Client = userSeedDTO.Client,
                 Server = userSeedDTO.ServerSeed,
                 Nonce = userSeedDTO.Nonce
-            });
+            };
         }
 
         public Task<UserSeedDTO> GetCurrentUserSeedInfo(string accountId)
@@ -180,6 +180,38 @@ namespace TuesdayMachines.Services
             var result = await (await serverSeeds.FindAsync(x => x.HashedKey == serverSeedHashed)).FirstOrDefaultAsync();
 
             return result == null ? string.Empty : result.Key;
+        }
+
+        public MinesActiveGameDTO GetMinesActiveGame(string accountId)
+        {
+            var liveGames = _databaseService.GetActiveGames().OfType<MinesActiveGameDTO>();
+            return liveGames.Find(x => x.Key == $"{accountId}_mines").FirstOrDefault();
+        }
+
+        public void AddMinesGame(string accountId, string walletId, long bet, int[] bombs)
+        {
+            var liveGames = _databaseService.GetActiveGames().OfType<MinesActiveGameDTO>();
+            var game = new MinesActiveGameDTO();
+            game.Key = $"{accountId}_mines";
+            game.AccountId = accountId;
+            game.WalletId = walletId;
+            game.Picked = [];
+            game.Bombs = bombs;
+            game.Bet = bet;
+
+            liveGames.InsertOne(game);
+        }
+
+        public void RemoveMinesGame(string accountId)
+        {
+            var liveGames = _databaseService.GetActiveGames().OfType<MinesActiveGameDTO>();
+            liveGames.DeleteOne(x => x.Key == $"{accountId}_mines");
+        }
+
+        public void UpdateMinesGame(string accountId, int index)
+        {
+            var liveGames = _databaseService.GetActiveGames().OfType<MinesActiveGameDTO>();
+            liveGames.UpdateOne(x => x.Key == $"{accountId}_mines", Builders<MinesActiveGameDTO>.Update.AddToSet(x => x.Picked, index));
         }
     }
 }

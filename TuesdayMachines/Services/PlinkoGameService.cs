@@ -5,8 +5,8 @@ namespace TuesdayMachines.Services
 {
     public class PlinkoGameService : IPlinkoGame
     {
-        private readonly double[] _preCalculated = { Math.Pow(256.0, 1.0), Math.Pow(256.0, 2.0), Math.Pow(256.0, 3.0), Math.Pow(256.0, 4.0) };
-        private readonly double[] _plinkoHighMultiply =
+        private static readonly double[] _preCalculated = { Math.Pow(256.0, 1.0), Math.Pow(256.0, 2.0), Math.Pow(256.0, 3.0), Math.Pow(256.0, 4.0) };
+        private static readonly double[] _plinkoHighMultiply =
         {
             1000.0,
             130.0,
