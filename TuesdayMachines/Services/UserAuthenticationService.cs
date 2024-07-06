@@ -3,16 +3,34 @@ using TuesdayMachines.Interfaces;
 using TuesdayMachines.Utils;
 using Microsoft.AspNetCore.Identity;
 using MongoDB.Driver;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace TuesdayMachines.Services
 {
     public class UserAuthenticationService : IUserAuthentication
     {
         private DatabaseService _databaseService;
+        private IJwtTokenHandler _jwtTokenHandler;
 
-        public UserAuthenticationService(DatabaseService databaseService)
+        public UserAuthenticationService(DatabaseService databaseService, IJwtTokenHandler jwtTokenHandler)
         {
             _databaseService = databaseService;
+            _jwtTokenHandler = jwtTokenHandler;
+        }
+
+        public void RegenerateTokenForUser(HttpContext context, AccountDTO account)
+        {
+            var token = _jwtTokenHandler.GenerateToken(new ClaimsIdentity(new Claim[]
+            {
+                  new Claim("Id", account.Id),
+                  new Claim("TwitchId", account.TwitchId),
+                  new Claim("TwitchLogin", account.TwitchLogin),
+                  new Claim("AccountType", account.AccountType.ToString()),
+            }),
+            DateTime.UtcNow.AddMinutes(30));
+
+            context.Response.Cookies.Append("sessionToken", token, new CookieOptions() { Expires = DateTimeOffset.UtcNow.AddMinutes(30) });
         }
 
         public async Task AuthorizeForUser(HttpContext context, string accountId, bool permanent)
@@ -33,55 +51,63 @@ namespace TuesdayMachines.Services
                 context.Response.Cookies.Append("deviceKey", device.Key, new CookieOptions() { Expires = DateTimeOffset.UtcNow.AddYears(1) });
             }
 
-            context.Session.SetString("authTimestamp", account.AuthTimestamp.ToString());
-            context.Session.SetString("userId", accountId);
+            RegenerateTokenForUser(context, account);
         }
 
         public async Task<AccountDTO> GetAuthenticatedUser(HttpContext context)
         {
-            DeviceDTO accountDevice = null;
-            var devices = _databaseService.GetDevices();
-            var userId = context.Session.GetString("userId");
-            if (string.IsNullOrEmpty(userId))
+            if (context.Request.Cookies.TryGetValue("sessionToken", out var session))
             {
-                if (!context.Request.Cookies.TryGetValue("deviceKey", out string deviceKey))
-                    return null;
+                if (_jwtTokenHandler.ValidateToken(session))
+                {
+                    AccountDTO accountDTO = new AccountDTO();
 
-                accountDevice = await(await devices.FindAsync(x => x.Key == deviceKey)).FirstOrDefaultAsync();
-                if (accountDevice == null)
-                    return null;
+                    var tokenHandler = new JwtSecurityTokenHandler();
+                    var securityToken = tokenHandler.ReadToken(session) as JwtSecurityToken;
 
-                context.Session.SetString("userId", accountDevice.AccountId);
+                    foreach (var claim in securityToken.Claims)
+                    {
+                        switch (claim.Type)
+                        {
+                            case "Id":
+                                accountDTO.Id = claim.Value;
+                                break;
+                            case "TwitchId":
+                                accountDTO.TwitchId = claim.Value;
+                                break;
+                            case "TwitchLogin":
+                                accountDTO.TwitchLogin = claim.Value;
+                                break;
+                            case "AccountType":
+                                accountDTO.AccountType = int.Parse(claim.Value);
+                                break;
+                        }
+                    }
 
-                userId = accountDevice.AccountId;
+                    return accountDTO;
+                }
             }
+
+            if (!context.Request.Cookies.TryGetValue("deviceKey", out string deviceKey))
+                return null;
+
+            var devices = _databaseService.GetDevices();
+            DeviceDTO accountDevice = await (await devices.FindAsync(x => x.Key == deviceKey)).FirstOrDefaultAsync();
+            if (accountDevice == null)
+                return null;
 
             var accounts = _databaseService.GetAccounts();
-            var account = await (await accounts.FindAsync(x => x.Id == userId)).FirstOrDefaultAsync();
+            var account = await (await accounts.FindAsync(x => x.Id == accountDevice.AccountId)).FirstOrDefaultAsync();
             if (account == null)
             {
-                context.Session.Remove("userId");
-                if (accountDevice != null)
-                {
-                    context.Response.Cookies.Delete("deviceKey");
-                    await devices.DeleteOneAsync(x => x.Id == accountDevice.Id);
-                }
+                context.Response.Cookies.Delete("deviceKey");
+                await devices.DeleteOneAsync(x => x.Id == accountDevice.Id);
+                return null;
             }
-            else if (accountDevice != null)
-            {
-                await devices.UpdateOneAsync(x => x.Id == accountDevice.Id, Builders<DeviceDTO>.Update.Set(x => x.LastUse, DateTimeOffset.UtcNow.ToUnixTimeSeconds()));
-                context.Session.SetString("authTimestamp", account.AuthTimestamp.ToString());
-            }
-            else
-            {
-                if (context.Session.GetString("authTimestamp") != account.AuthTimestamp.ToString())
-                {
-                    context.Session.Remove("authTimestamp");
-                    context.Session.Remove("userId");
-                    context.Response.Cookies.Delete("deviceKey");
-                    return null;
-                }
-            }
+
+            await devices.UpdateOneAsync(x => x.Id == accountDevice.Id, Builders<DeviceDTO>.Update.Set(x => x.LastUse, DateTimeOffset.UtcNow.ToUnixTimeSeconds()));
+
+            RegenerateTokenForUser(context, account);
 
             return account;
         }
@@ -94,8 +120,7 @@ namespace TuesdayMachines.Services
                 await devices.DeleteOneAsync(x => x.Key == deviceKey);
             }
 
-            context.Session.Remove("authTimestamp");
-            context.Session.Remove("userId");
+            context.Response.Cookies.Delete("sessionToken");
             context.Response.Cookies.Delete("deviceKey");
         }
 

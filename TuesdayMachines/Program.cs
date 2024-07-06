@@ -9,12 +9,6 @@ using TuesdayMachines.WebSockets;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSession(options =>
-{
-    options.Cookie.Name = "session";
-    options.IdleTimeout = TimeSpan.FromMinutes(15);
-});
-
 builder.Services.AddAntiforgery(options =>
 {
     options.FormFieldName = "csrfToken";
@@ -39,6 +33,7 @@ builder.Services.AddSingleton<DatabaseService>();
 builder.Services.AddSingleton<IMayanGame, MayanGameService>();
 builder.Services.AddSingleton<IPlinkoGame, PlinkoGameService>();
 builder.Services.AddSingleton<IMinesGame, MinesGameService>();
+builder.Services.AddSingleton<IJwtTokenHandler, JwtTokenHandlerService>();
 builder.Services.AddSingleton<IAccountsRepository, AccountsRepositoryService>();
 builder.Services.AddSingleton<ITwitchApi, TwitchApiService>();
 builder.Services.AddSingleton<IUserAuthentication, UserAuthenticationService>();
@@ -83,8 +78,6 @@ app.Use(async (ctx, next) =>
 
     await next();
 });
-
-app.UseSession();
 
 app.UseStaticFiles();
 
