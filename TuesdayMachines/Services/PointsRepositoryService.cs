@@ -79,11 +79,11 @@ namespace TuesdayMachines.Services
             }
         }
 
-        public async Task<IAsyncCursor<WalletDTO>> GetUserWallets(string twitchUserId)
+        public async Task<List<WalletDTO>> GetUserWallets(string twitchUserId)
         {
             var wallets = _databaseService.GetWallets();
 
-            return await wallets.FindAsync(x => x.TwitchUserId == twitchUserId);
+            return await (await wallets.FindAsync(x => x.TwitchUserId == twitchUserId)).ToListAsync();
         }
 
         public async Task<PointOperationResult> GetBalance(string twitchUserId, string broadcasterAccountId)

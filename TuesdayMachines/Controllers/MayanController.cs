@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using TuesdayMachines.ActionFilters;
+using TuesdayMachines.Filters;
 using TuesdayMachines.Interfaces;
 using TuesdayMachines.Models;
 using TuesdayMachines.Services;
@@ -10,7 +10,7 @@ namespace TuesdayMachines.Controllers
     [TypeFilter(typeof(HomeActionFilter))]
     public class MayanController : Controller
     {
-        private readonly long[] _betsAllowedValues = [25, 50, 75, 100, 125, 250, 500, 750, 1000, 1250, 2500, 5000, 10000];
+        private readonly long[] _betsAllowedValues = [25, 50, 75, 100, 125, 250, 500, 750, 1000, 1250, 2500, 5000, 10000, 20000];
 
         private readonly IMayanGame _mayanGame;
         private readonly IPointsRepository _pointsRepository;

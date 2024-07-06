@@ -64,6 +64,10 @@
     width: auto;
 }
 
+.btn-selected {
+    background-color: #fca266 !important;
+}
+
 .btn-spin {
     width: 100%;
 }

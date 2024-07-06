@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
-using TuesdayMachines.ActionFilters;
+using TuesdayMachines.Filters;
 using TuesdayMachines.Dto;
 using TuesdayMachines.Interfaces;
 using TuesdayMachines.Models;

@@ -1,6 +1,6 @@
 ﻿using TuesdayMachines.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using TuesdayMachines.ActionFilters;
+using TuesdayMachines.Filters;
 using MongoDB.Driver;
 using TuesdayMachines.Models;
 using TuesdayMachines.Utils;
@@ -187,8 +187,7 @@ namespace TuesdayMachines.Controllers
         public async Task<IActionResult> GetWallets()
         {
             var account = HttpContext.Items["userAccount"] as Dto.AccountDTO;
-            var cursor = await _pointsRepository.GetUserWallets(account.TwitchId);
-            var wallets = await cursor.ToListAsync();
+            var wallets = await _pointsRepository.GetUserWallets(account.TwitchId);
             var broadcasters = await _broadcastersRepository.GetBroadcasters(wallets.Select(x => x.BroadcasterAccountId));
 
             return Json(new { wallets = wallets.Select(x => new { x.Balance, x.BroadcasterAccountId }), broadcasters = broadcasters.Select(x => new { x.AccountId, x.Login, x.Points }) });

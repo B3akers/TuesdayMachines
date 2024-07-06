@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TuesdayMachines.ActionFilters;
+using TuesdayMachines.Filters;
 using TuesdayMachines.WebSockets;
 
 namespace TuesdayMachines.Controllers

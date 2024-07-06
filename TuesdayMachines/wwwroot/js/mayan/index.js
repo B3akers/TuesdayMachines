@@ -11,7 +11,8 @@ const betsAllowedValues = [
     1250,
     2500,
     5000,
-    10000
+    10000,
+    20000
 ];
 
 const replecmentsGems = [
@@ -32,6 +33,8 @@ const nextReelStopTime = 15;
 
 const winTextUpdateInterval = 2;
 const winTextStayInterval = 60;
+
+var autoPlayInterval = null;
 
 const gameRect = {
     width: 1792,
@@ -754,6 +757,7 @@ async function playGame() {
                 boardReel.data = reelsData.baseGame[i];
                 boardReel.setStopIndex(0);
             }
+            disableAutoPlay();
             alert(json.error);
             console.error(json.error);
             isPlaying = false;
@@ -779,6 +783,40 @@ function playGameOrFastSpinOnce() {
         playGame();
     } else {
         isFastSpinOnce = true;
+    }
+}
+
+function onFastSpinSwitch(e) {
+    isFastSpinEnabled = !isFastSpinEnabled;
+    if (isFastSpinEnabled) {
+        e.classList.add('btn-selected');
+    } else {
+        e.classList.remove('btn-selected');
+    }
+}
+
+function disableAutoPlay() {
+    const e = document.getElementById('autoPlayButton');
+    e.classList.remove('btn-selected');
+    clearInterval(autoPlayInterval);
+    autoPlayInterval = null;
+}
+
+function enableAutoPlay() {
+    const e = document.getElementById('autoPlayButton');
+    e.classList.add('btn-selected');
+    autoPlayInterval = setInterval(function () {
+        if (canStartNewGame()) {
+            playGame();
+        }
+    }, 400);
+}
+
+function onAutoPlaySwitch() {
+    if (autoPlayInterval) {
+        disableAutoPlay();
+    } else {
+        enableAutoPlay();
     }
 }
 

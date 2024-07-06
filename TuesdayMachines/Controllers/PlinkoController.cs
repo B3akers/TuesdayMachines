@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using TuesdayMachines.ActionFilters;
+using TuesdayMachines.Filters;
 using TuesdayMachines.Interfaces;
 using TuesdayMachines.Models;
 

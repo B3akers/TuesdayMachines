@@ -47,7 +47,9 @@
             </div>
         </div>
         <div class="grid-container">
-            <button style="grid-column: 1 / span 18;" class="btn btn-spin" type="button" onclick="playGameOrFastSpinOnce()">SPIN</button>
+            <button style="grid-column: 1 / span 4;" class="btn btn-spin" type="button" onclick="onFastSpinSwitch(this)">FAST SPIN</button>
+            <button style="grid-column: 5 / span 10;" class="btn btn-spin" type="button" onclick="playGameOrFastSpinOnce()">SPIN</button>
+            <button style="grid-column: 15 / span 4;" class="btn btn-spin" id="autoPlayButton" type="button" onclick="onAutoPlaySwitch()">AUTO PLAY</button>
         </div>
         <div class="align-right">
             <input type="range" min="0" max="100" value="100" step="1" oninput="onAudioVolumeChange(this.value)" onchange="onAudioVolumeChange(this.value)" />

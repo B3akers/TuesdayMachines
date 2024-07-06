@@ -23,7 +23,7 @@ namespace TuesdayMachines.Interfaces
         void AddPointsToAll(string broadcasterAccountId, long value);
         PointOperationResult TakePoints(string twitchUserId, string broadcasterAccountId, long value);
         Task<PointOperationResult> GetBalance(string twitchUserId, string broadcasterAccountId);
-        Task<IAsyncCursor<WalletDTO>> GetUserWallets(string twitchUserId);
+        Task<List<WalletDTO>> GetUserWallets(string twitchUserId);
         Task<List<WalletDTO>> GetTopAccounts(string wallet, int limit);
     }
 }

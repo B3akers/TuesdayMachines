@@ -169,14 +169,22 @@ namespace TuesdayMachines.WebSockets
         private ConcurrentDictionary<string, WsConnectionInfo> _activeConnections = new ConcurrentDictionary<string, WsConnectionInfo>();
         private ConcurrentDictionary<string, ConcurrentDictionary<string, WsRoulettePlayer>> _roomsConnections = new ConcurrentDictionary<string, ConcurrentDictionary<string, WsRoulettePlayer>>();
 
-
+        private readonly CancellationTokenSource _cts;
         private readonly IPointsRepository _pointsRepository;
         private readonly LiveRouletteService _liveRouletteService;
 
-        public WebSocketRouletteHandler(LiveRouletteService liveRouletteService, IPointsRepository pointsRepository)
+        public WebSocketRouletteHandler(LiveRouletteService liveRouletteService, IPointsRepository pointsRepository, IHostApplicationLifetime hostApplicationLifetime)
         {
             _liveRouletteService = liveRouletteService;
             _pointsRepository = pointsRepository;
+            _cts = new CancellationTokenSource();
+
+            hostApplicationLifetime.ApplicationStopping.Register(OnShutdown);
+        }
+
+        private void OnShutdown()
+        {
+            _cts.Cancel();
         }
 
         public int GetClientsCount()
@@ -204,7 +212,7 @@ namespace TuesdayMachines.WebSockets
                 {
                     try
                     {
-                        await connection.Value.Socket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
+                        await connection.Value.Socket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, _cts.Token);
                     }
                     catch { }
                 }
@@ -219,7 +227,7 @@ namespace TuesdayMachines.WebSockets
             {
                 try
                 {
-                    await connection.Sokcet.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
+                    await connection.Sokcet.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, _cts.Token);
                 }
                 catch { }
             }
@@ -242,7 +250,7 @@ namespace TuesdayMachines.WebSockets
                 if (oldConnection.Sokcet.State == WebSocketState.Open
                     || oldConnection.Sokcet.State == WebSocketState.CloseReceived)
                 {
-                    await oldConnection.Sokcet.CloseAsync((WebSocketCloseStatus)3001, "Another connection", CancellationToken.None);
+                    await oldConnection.Sokcet.CloseAsync((WebSocketCloseStatus)3001, "Another connection", _cts.Token);
                 }
             }
 
@@ -250,7 +258,7 @@ namespace TuesdayMachines.WebSockets
 
             if (!_activeConnections.TryAdd(account.Id, connectionInfo))
             {
-                await socket.CloseAsync((WebSocketCloseStatus)3001, "Another connection", CancellationToken.None);
+                await socket.CloseAsync((WebSocketCloseStatus)3001, "Another connection", _cts.Token);
                 return;
             }
 
@@ -261,13 +269,13 @@ namespace TuesdayMachines.WebSockets
             {
                 var buffer = new byte[1024 * 8];
                 receiveResult = await socket.ReceiveAsync(
-                   new ArraySegment<byte>(buffer), CancellationToken.None);
+                   new ArraySegment<byte>(buffer), _cts.Token);
 
                 while (!receiveResult.CloseStatus.HasValue)
                 {
                     if (!receiveResult.EndOfMessage)
                     {
-                        await socket.CloseOutputAsync(WebSocketCloseStatus.MessageTooBig, string.Empty, CancellationToken.None);
+                        await socket.CloseOutputAsync(WebSocketCloseStatus.MessageTooBig, string.Empty, _cts.Token);
                         break;
                     }
 
@@ -280,7 +288,7 @@ namespace TuesdayMachines.WebSockets
                                     new ArraySegment<byte>(Encoding.UTF8.GetBytes("#2")),
                                     WebSocketMessageType.Text,
                                     true,
-                                    CancellationToken.None);
+                                    _cts.Token);
                         }
                         else
                         {
@@ -317,7 +325,7 @@ namespace TuesdayMachines.WebSockets
 
                         if (string.IsNullOrEmpty(walletId))
                         {
-                            await socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Invalid wallet", CancellationToken.None);
+                            await socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Invalid wallet", _cts.Token);
                             break;
                         }
 
@@ -354,13 +362,13 @@ namespace TuesdayMachines.WebSockets
                                     new ArraySegment<byte>(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(state))),
                                     WebSocketMessageType.Text,
                                     true,
-                                    CancellationToken.None);
+                                    _cts.Token);
 
                         authorized = true;
                     }
 
                     receiveResult = await socket.ReceiveAsync(
-                                        new ArraySegment<byte>(buffer), CancellationToken.None);
+                                        new ArraySegment<byte>(buffer), _cts.Token);
                 }
             }
             catch { }
@@ -378,7 +386,7 @@ namespace TuesdayMachines.WebSockets
 
             if (socket.State == WebSocketState.Open)
             {
-                await socket.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, string.Empty, CancellationToken.None);
+                await socket.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, string.Empty, _cts.Token);
                 return;
             }
 
@@ -391,7 +399,7 @@ namespace TuesdayMachines.WebSockets
             await socket.CloseOutputAsync(
                  receiveResult.CloseStatus.Value,
                  receiveResult.CloseStatusDescription,
-                 CancellationToken.None);
+                 _cts.Token);
         }
     }
 }

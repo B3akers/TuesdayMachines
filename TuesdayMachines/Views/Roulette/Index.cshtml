@@ -122,7 +122,7 @@
         const csrfToken = document.getElementsByName('csrfToken')[0].value;
     </script>
     <script>
-        const playGameUrl = '@Url.Action("Ws", "Roulette")';
+        const playGameUrl = '@Url.Action("Ws", "Roulette", null, @Context.Request.Scheme == "https" ? "wss" : "ws")';
         const getWalletUrl = '@Url.Action("GetWallet", "Game")';
     </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

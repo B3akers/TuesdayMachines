@@ -1,7 +1,7 @@
 ﻿using TuesdayMachines.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Principal;
-using TuesdayMachines.ActionFilters;
+using TuesdayMachines.Filters;
 using Microsoft.Extensions.Localization;
 
 namespace TuesdayMachines.Controllers
