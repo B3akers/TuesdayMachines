@@ -58,14 +58,12 @@ namespace TuesdayMachines.Services
         {
             if (context.Request.Cookies.TryGetValue("sessionToken", out var session))
             {
-                if (_jwtTokenHandler.ValidateToken(session))
+                var claimsPrincipal = _jwtTokenHandler.ValidateToken(session);
+                if (claimsPrincipal != null)
                 {
                     AccountDTO accountDTO = new AccountDTO();
 
-                    var tokenHandler = new JwtSecurityTokenHandler();
-                    var securityToken = tokenHandler.ReadToken(session) as JwtSecurityToken;
-
-                    foreach (var claim in securityToken.Claims)
+                    foreach (var claim in claimsPrincipal.Claims)
                     {
                         switch (claim.Type)
                         {

@@ -31,12 +31,14 @@ namespace TuesdayMachines.Services
             return tokenHandler.WriteToken(token);
         }
 
-        public bool ValidateToken(string token)
+        public ClaimsPrincipal ValidateToken(string token)
         {
+            ClaimsPrincipal claimsPrincipal = null;
+
             var tokenHandler = new JwtSecurityTokenHandler();
             try
             {
-                tokenHandler.ValidateToken(token, new TokenValidationParameters
+                claimsPrincipal = tokenHandler.ValidateToken(token, new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = true,
@@ -45,13 +47,13 @@ namespace TuesdayMachines.Services
                     ValidIssuer = _configuration["Jwt:Issuer"],
                     ValidAudience = _configuration["Jwt:Audience"],
                     IssuerSigningKey = _symmetricSecurityKey
-                }, out SecurityToken validatedToken);
+                }, out _);
             }
             catch
             {
-                return false;
+                return null;
             }
-            return true;
+            return claimsPrincipal;
         }
     }
 }
