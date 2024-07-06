@@ -121,6 +121,22 @@ namespace TuesdayMachines.WebSockets
         public string Error { get; set; }
     };
 
+    public class RouletteChatMsg
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = "game_chat_msg";
+
+        [JsonPropertyName("twitchId")]
+        public string TwitchId { get; set; }
+
+        [JsonPropertyName("login")]
+        public string Login { get; set; }
+
+        [JsonPropertyName("msg")]
+        public string Msg { get; set; }
+    };
+
+
     public class RouletteGameUpdateBalance
     {
         [JsonPropertyName("id")]
@@ -151,8 +167,16 @@ namespace TuesdayMachines.WebSockets
 
     [JsonDerivedType(typeof(RouletteBasePacket), typeDiscriminator: "base")]
     [JsonDerivedType(typeof(RoulettPlaceBetPacket), typeDiscriminator: "placeBet")]
+    [JsonDerivedType(typeof(RoulettChatMsgPacket), typeDiscriminator: "chatMsg")]
     public class RouletteBasePacket
     {
+    };
+
+    public class RoulettChatMsgPacket : RouletteBasePacket
+    {
+        [JsonPropertyName("msg")]
+        public string Msg { get; set; }
+
     };
 
     public class RoulettPlaceBetPacket : RouletteBasePacket
@@ -264,6 +288,7 @@ namespace TuesdayMachines.WebSockets
 
             bool authorized = false;
             string walletId = string.Empty;
+            long lastMessage = 0;
 
             try
             {
@@ -294,17 +319,36 @@ namespace TuesdayMachines.WebSockets
                         {
                             try
                             {
-                                RoulettPlaceBetPacket packet = JsonSerializer.Deserialize<RoulettPlaceBetPacket>(data);
-                                var resultHandler = await _liveRouletteService.HandlePacket(connectionInfo, packet);
-                                if (resultHandler != null)
+                                RouletteBasePacket packet = JsonSerializer.Deserialize<RouletteBasePacket>(data);
+                                if (packet is RoulettChatMsgPacket msgPacket)
                                 {
-                                    if (string.IsNullOrEmpty(resultHandler.Item2))
+                                    if (msgPacket.Msg.Length < 256)
                                     {
-                                        await SendToAll(resultHandler.Item1);
+                                        if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - lastMessage > 300)
+                                        {
+                                            await SendToAllInRoom(JsonSerializer.Serialize(new RouletteChatMsg()
+                                            {
+                                                Login = account.TwitchLogin,
+                                                TwitchId = account.TwitchId,
+                                                Msg = msgPacket.Msg
+                                            }), walletId);
+                                            lastMessage = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                                        }
                                     }
-                                    else
+                                }
+                                else
+                                {
+                                    var resultHandler = await _liveRouletteService.HandlePacket(connectionInfo, packet);
+                                    if (resultHandler != null)
                                     {
-                                        await SendToAllInRoom(resultHandler.Item1, resultHandler.Item2);
+                                        if (string.IsNullOrEmpty(resultHandler.Item2))
+                                        {
+                                            await SendToAll(resultHandler.Item1);
+                                        }
+                                        else
+                                        {
+                                            await SendToAllInRoom(resultHandler.Item1, resultHandler.Item2);
+                                        }
                                     }
                                 }
                             }

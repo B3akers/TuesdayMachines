@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
 using System.Threading.RateLimiting;
+using TuesdayMachines.Api;
 using TuesdayMachines.Interfaces;
 using TuesdayMachines.Services;
 using TuesdayMachines.WebSockets;
@@ -90,6 +91,12 @@ app.UseStaticFiles();
 app.UseRequestLocalization();
 
 app.UseRouting();
+
+app.UseAntiforgery();
+app.MapGameEndpoints();
+app.MapMayanEndpoints();
+app.MapPlinkoEndpoints();
+app.MapMinesEndpoints();
 
 app.UseAuthorization();
 

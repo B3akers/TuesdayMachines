@@ -19,6 +19,21 @@ var myAccountId;
 var myTwitchId;
 var betClosed = false;
 
+const rtf1 = new Intl.RelativeTimeFormat('en', { style: 'short' });
+
+function updateSpanTimestamp(span, time) {
+    const timeSpan = +span.dataset.time;
+    const delta = Math.floor((time - timeSpan) / 1000);
+
+    if (delta < 60) {
+        span.innerText = rtf1.format(-delta, 'second');
+    } else if (delta < 3600) {
+        span.innerText = rtf1.format(-Math.round(delta / 60), 'minute');
+    } else {
+        span.innerText = rtf1.format(-Math.round(delta / 3600), 'hour');
+    }
+}
+
 var currentRoundBets = {};
 var lastRoundBets = {};
 
@@ -273,6 +288,80 @@ function initWebsocketConnection() {
             }, timer);
         } else if (packet.id == 'game_update_balance') {
             updateBalance(packet.balance);
+        } else if (packet.id == 'game_chat_msg') {
+            const chatWindow = document.querySelector('section.chat-window');
+            if (chatWindow.children.length > 30) {
+                chatWindow.children[0].remove();
+            }
+
+            const message = document.createElement('div');
+            const messageText = document.createElement('p');
+            messageText.classList.add('msg');
+            messageText.innerText = packet.msg;
+            message.appendChild(messageText);
+
+            let messageAdded = false;
+            const isMyMessage = packet.twitchId == myTwitchId;
+            if (chatWindow.children.length > 0) {
+                const lastMessage = chatWindow.children[chatWindow.children.length - 1];
+                const messages = lastMessage.querySelector('.messages[data-id="' + packet.twitchId + '"]');
+                const posttimeSpan = lastMessage.querySelector('.flr span[data-time]');
+
+                if (messages && ((Date.now() - posttimeSpan.dataset.time) / 1000) < 5) {
+                    messages.appendChild(message);
+                    messageAdded = true;
+
+                    const posttimeSpan = lastMessage.querySelector('.flr span[data-time]');
+                    posttimeSpan.dataset.time = Date.now();
+                    posttimeSpan.innerText = 'Now';
+                }
+            }
+
+            if (!messageAdded) {
+                const sec = document.createElement('article');
+                sec.classList.add('msg-container');
+                sec.classList.add(isMyMessage ? 'msg-self' : 'msg-remote');
+
+                const div = document.createElement('div');
+                div.classList.add('msg-box');
+
+                const div2 = document.createElement('div');
+                div2.classList.add('flr');
+
+                const div3 = document.createElement('div');
+                div3.dataset.id = packet.twitchId;
+                div3.classList.add('messages');
+
+                const timestamp = document.createElement('span');
+                timestamp.classList.add('timestamp');
+
+                const username = document.createElement('span');
+                username.classList.add('username');
+                username.innerText = packet.login;
+
+                const bull = document.createTextNode('\u2022');
+                const posttime = document.createElement('span');
+                posttime.classList.add('posttime');
+                posttime.dataset.time = Date.now();
+                posttime.innerText = 'Now';
+
+                timestamp.appendChild(username);
+                timestamp.appendChild(bull);
+                timestamp.appendChild(posttime);
+
+                div3.appendChild(message);
+                div2.appendChild(div3);
+                div2.appendChild(timestamp);
+                div.appendChild(div2);
+
+                sec.appendChild(div);
+                chatWindow.append(sec);
+            }
+
+            var limit = Math.max(document.body.scrollHeight, document.body.offsetHeight,
+                chatWindow.clientHeight, chatWindow.scrollHeight, chatWindow.offsetHeight);
+
+            chatWindow.scrollTo(0, limit);
         }
     };
 
@@ -332,13 +421,19 @@ function updateTime() {
     const nonceSpan = document.getElementById('spinNonceSpan');
     nonceSpan.innerText = spinNonce ? spinNonce : '-';
 
+    const currentTime = Date.now();
+
     const element = document.getElementById('spinTimeData');
-    const delta = nextSpinTime - (Date.now() / 1000);
+    const delta = nextSpinTime - (currentTime / 1000);
     if (delta < 0) {
         element.innerText = 'Wait for next round';
     } else {
         element.innerText = `Place your bets: ${Math.round(delta)} seconds`;
     }
+
+    document.querySelectorAll('span[data-time]').forEach(x => {
+        updateSpanTimestamp(x, currentTime);
+    });
 }
 
 function clearWinners() {
@@ -435,6 +530,21 @@ function onChipChange(e) {
 
     e.classList.add('selected');
     selectedCoin = e;
+}
+
+function sendChatMessage() {
+    if (!webSocketClient) {
+        return;
+    }
+
+    const input = document.querySelector('.chat-input input');
+    const message = input.value;
+    input.value = '';
+
+    webSocketClient.send(JSON.stringify({
+        $type: 'chatMsg',
+        msg: message
+    }));
 }
 
 async function getCurrentBalance() {

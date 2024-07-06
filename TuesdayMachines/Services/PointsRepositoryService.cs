@@ -16,17 +16,27 @@ namespace TuesdayMachines.Services
             _databaseService = databaseService;
         }
 
-        public void AddPoints(string twitchUserId, string broadcasterAccountId, long value)
+        public PointOperationResult AddPoints(string twitchUserId, string broadcasterAccountId, long value)
         {
             var wallets = _databaseService.GetWallets();
             var _lock = _locks.GetOrAdd(broadcasterAccountId, new object());
+            WalletDTO walletDTO = null;
+
             lock (_lock)
             {
-                wallets.UpdateOne(x => x.TwitchUserId == twitchUserId && x.BroadcasterAccountId == broadcasterAccountId, Builders<WalletDTO>.Update.Inc(x => x.Balance, value), new UpdateOptions()
+                var filter = Builders<WalletDTO>.Filter;
+                walletDTO = wallets.FindOneAndUpdate(filter.Eq(x => x.TwitchUserId, twitchUserId) & filter.Eq(x => x.BroadcasterAccountId, broadcasterAccountId), Builders<WalletDTO>.Update.Inc(x => x.Balance, value), new FindOneAndUpdateOptions<WalletDTO>()
                 {
-                    IsUpsert = true
+                    IsUpsert = true,
+                    ReturnDocument = ReturnDocument.After
                 });
             }
+
+            return new PointOperationResult()
+            {
+                Success = true,
+                Balance = walletDTO.Balance
+            };
         }
 
 

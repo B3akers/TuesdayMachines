@@ -18,7 +18,7 @@ namespace TuesdayMachines.Interfaces
     public interface IPointsRepository
     {
         void SetPoints(string twitchUserId, string broadcasterAccountId, long value);
-        void AddPoints(string twitchUserId, string broadcasterAccountId, long value);
+        PointOperationResult AddPoints(string twitchUserId, string broadcasterAccountId, long value);
         void AddPoints(List<PointModifyCommand> users, string broadcasterAccountId);
         void AddPointsToAll(string broadcasterAccountId, long value);
         PointOperationResult TakePoints(string twitchUserId, string broadcasterAccountId, long value);

@@ -226,7 +226,7 @@ async function cashout() {
             const winnings = data.winnings;
             const multiplier = data.multiplier;
 
-            displayResult('cashout', winnings, multiplier);
+            displayResult('cashout', winnings, multiplier, data.balance);
             document.getElementById('bet-button').innerText = 'Bet';
             document.getElementById('bet-button').onclick = startGame;
             revealAll(data.mines, data.picked);
@@ -292,12 +292,13 @@ async function loadPage() {
     await fetchGameData();
 }
 
-function displayResult(type, winnings = 0, multiplier = 0) {
+function displayResult(type, winnings = 0, multiplier = 0, balance = 0) {
     const result = document.getElementById('result');
     if (type === 'lost') {
         result.innerText = 'You lost!';
     } else if (type === 'cashout') {
         addToBalance(winnings);
+        setBalance(balance);
         result.innerText = `Cashout! Multiplier: ${multiplier.toFixed(2)}x, Winnings: ${winnings}`;
     }
     result.style.display = 'block';
@@ -331,7 +332,7 @@ function checkAllSafeSquaresOpened(data) {
         document.getElementById('bet-button').innerText = 'Bet';
         document.getElementById('bet-button').onclick = startGame;
 
-        displayResult('cashout', data.winnings, data.multiplier);
+        displayResult('cashout', data.winnings, data.multiplier, data.balance);
     }
 }
 
