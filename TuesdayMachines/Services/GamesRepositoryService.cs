@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using Microsoft.Extensions.Caching.Memory;
+using MongoDB.Driver;
 using TuesdayMachines.Dto;
 using TuesdayMachines.Interfaces;
 using TuesdayMachines.Models;
@@ -8,9 +9,11 @@ namespace TuesdayMachines.Services
     public class GamesRepositoryService : IGamesRepository
     {
         private readonly DatabaseService _databaseService;
-        public GamesRepositoryService(DatabaseService databaseService)
+        private readonly IMemoryCache _memoryCache;
+        public GamesRepositoryService(DatabaseService databaseService, IMemoryCache memoryCache)
         {
             _databaseService = databaseService;
+            _memoryCache = memoryCache;
         }
 
         public async Task DeleteGame(string id)
@@ -18,11 +21,20 @@ namespace TuesdayMachines.Services
             await _databaseService.GetGames().DeleteOneAsync(x => x.Id == id);
         }
 
-        public async Task<List<SlotGameDTO>> GetGames()
+        public async Task<List<SlotGameDTO>> GetGames(bool useCache)
         {
-            var games = _databaseService.GetGames();
+            if (!useCache)
+            {
+                var result = await (await _databaseService.GetGames().FindAsync(Builders<SlotGameDTO>.Filter.Empty)).ToListAsync();
+                _memoryCache.Set("gamesList", result);
+                return result;
+            }
 
-            return await (await games.FindAsync(Builders<SlotGameDTO>.Filter.Empty)).ToListAsync();
+            return await _memoryCache.GetOrCreateAsync("gamesList", async entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15);
+                return await (await _databaseService.GetGames().FindAsync(Builders<SlotGameDTO>.Filter.Empty)).ToListAsync();
+            });
         }
 
         public async Task UpdateOrCreateGame(AddGameModel model)

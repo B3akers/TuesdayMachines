@@ -143,12 +143,15 @@
     <main role="main" class="pb-3">
         <div class="row">
 
-            @foreach (var game in Model.Games)
+            @for (int i = 0; i < Model.Games.Count; i++)
 			{
+                var game = Model.Games[i];
+
                 <a class="category-selection text-decoration-none col col-md-2" href="javascript:void(0);" role="button" data-metadata="@string.Join(',', game.Metadata)" data-category-id="@game.Code" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <div class="text-center">
                         <img class="rounded-5" src="@game.Logo" width="150" height="150">
                     </div>
+                    <div class="text-center"><span class="blink_me"></span> <b style="color: white;">@Model.GamesPlayerCount[i]</b> <span style="color: lightgray;">playing</span></div>
                     <div class="text-white text-center rounded-pill p-2" style="background-color: @game.Color;">@game.Name</div>
                 </a>
             }

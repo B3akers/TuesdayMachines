@@ -157,6 +157,86 @@ function addMyBetToBoard(number, amount) {
     currentRoundBets[number] += +amount;
 }
 
+function processMessagePacket(packet) {
+    const chatWindow = document.querySelector('section.chat-window');
+    if (chatWindow.children.length > 30) {
+        chatWindow.children[0].remove();
+    }
+
+    const message = document.createElement('div');
+    const messageText = document.createElement('p');
+    messageText.classList.add('msg');
+    messageText.innerText = packet.msg;
+    message.appendChild(messageText);
+
+    let messageAdded = false;
+    const isMyMessage = packet.twitchId == myTwitchId;
+    if (chatWindow.children.length > 0) {
+        const lastMessage = chatWindow.children[chatWindow.children.length - 1];
+        const messages = lastMessage.querySelector('.messages[data-id="' + packet.twitchId + '"]');
+        const posttimeSpan = lastMessage.querySelector('.flr span[data-time]');
+
+        if (messages && ((packet.time - posttimeSpan.dataset.time) / 1000) < 5) {
+            messages.appendChild(message);
+            messageAdded = true;
+
+            const posttimeSpan = lastMessage.querySelector('.flr span[data-time]');
+            posttimeSpan.dataset.time = packet.time;
+            posttimeSpan.innerText = 'Now';
+        }
+    }
+
+    if (!messageAdded) {
+        const sec = document.createElement('article');
+        sec.classList.add('msg-container');
+        sec.classList.add(isMyMessage ? 'msg-self' : 'msg-remote');
+
+        const div = document.createElement('div');
+        div.classList.add('msg-box');
+
+        const div2 = document.createElement('div');
+        div2.classList.add('flr');
+
+        const div3 = document.createElement('div');
+        div3.dataset.id = packet.twitchId;
+        div3.classList.add('messages');
+
+        const timestamp = document.createElement('span');
+        timestamp.classList.add('timestamp');
+
+        const username = document.createElement('span');
+        username.classList.add('username');
+        username.innerText = packet.login;
+
+        const bull = document.createTextNode('\u2022');
+        const posttime = document.createElement('span');
+        posttime.classList.add('posttime');
+        posttime.dataset.time = packet.time;
+        posttime.innerText = 'Now';
+
+        timestamp.appendChild(username);
+        timestamp.appendChild(bull);
+        timestamp.appendChild(posttime);
+
+        div3.appendChild(message);
+        div2.appendChild(div3);
+        div2.appendChild(timestamp);
+        div.appendChild(div2);
+
+        sec.appendChild(div);
+        chatWindow.append(sec);
+    }
+}
+
+function scrollToEndChat() {
+    const chatWindow = document.querySelector('section.chat-window');
+
+    var limit = Math.max(document.body.scrollHeight, document.body.offsetHeight,
+        chatWindow.clientHeight, chatWindow.scrollHeight, chatWindow.offsetHeight);
+
+    chatWindow.scrollTo(0, limit);
+}
+
 function initWebsocketConnection() {
     if (!walletId) {
         return;
@@ -200,6 +280,17 @@ function initWebsocketConnection() {
                 addLastResult(item);
             }
 
+            const chatWindow = document.querySelector('section.chat-window');
+            chatWindow.innerHTML = '';
+
+            for (let i = 0; i < packet.messages.length; i++) {
+                processMessagePacket(packet.messages[i]);
+            }
+
+            if (packet.messages.length > 0) {
+                scrollToEndChat();
+            }
+            
             betClosed = packet.betClosed;
             totalClients = packet.clientsCount;
             roomClients = packet.roomClientsCount;
@@ -289,79 +380,8 @@ function initWebsocketConnection() {
         } else if (packet.id == 'game_update_balance') {
             updateBalance(packet.balance);
         } else if (packet.id == 'game_chat_msg') {
-            const chatWindow = document.querySelector('section.chat-window');
-            if (chatWindow.children.length > 30) {
-                chatWindow.children[0].remove();
-            }
-
-            const message = document.createElement('div');
-            const messageText = document.createElement('p');
-            messageText.classList.add('msg');
-            messageText.innerText = packet.msg;
-            message.appendChild(messageText);
-
-            let messageAdded = false;
-            const isMyMessage = packet.twitchId == myTwitchId;
-            if (chatWindow.children.length > 0) {
-                const lastMessage = chatWindow.children[chatWindow.children.length - 1];
-                const messages = lastMessage.querySelector('.messages[data-id="' + packet.twitchId + '"]');
-                const posttimeSpan = lastMessage.querySelector('.flr span[data-time]');
-
-                if (messages && ((Date.now() - posttimeSpan.dataset.time) / 1000) < 5) {
-                    messages.appendChild(message);
-                    messageAdded = true;
-
-                    const posttimeSpan = lastMessage.querySelector('.flr span[data-time]');
-                    posttimeSpan.dataset.time = Date.now();
-                    posttimeSpan.innerText = 'Now';
-                }
-            }
-
-            if (!messageAdded) {
-                const sec = document.createElement('article');
-                sec.classList.add('msg-container');
-                sec.classList.add(isMyMessage ? 'msg-self' : 'msg-remote');
-
-                const div = document.createElement('div');
-                div.classList.add('msg-box');
-
-                const div2 = document.createElement('div');
-                div2.classList.add('flr');
-
-                const div3 = document.createElement('div');
-                div3.dataset.id = packet.twitchId;
-                div3.classList.add('messages');
-
-                const timestamp = document.createElement('span');
-                timestamp.classList.add('timestamp');
-
-                const username = document.createElement('span');
-                username.classList.add('username');
-                username.innerText = packet.login;
-
-                const bull = document.createTextNode('\u2022');
-                const posttime = document.createElement('span');
-                posttime.classList.add('posttime');
-                posttime.dataset.time = Date.now();
-                posttime.innerText = 'Now';
-
-                timestamp.appendChild(username);
-                timestamp.appendChild(bull);
-                timestamp.appendChild(posttime);
-
-                div3.appendChild(message);
-                div2.appendChild(div3);
-                div2.appendChild(timestamp);
-                div.appendChild(div2);
-
-                sec.appendChild(div);
-                chatWindow.append(sec);
-            }
-
-            var limit = Math.max(document.body.scrollHeight, document.body.offsetHeight,
-                chatWindow.clientHeight, chatWindow.scrollHeight, chatWindow.offsetHeight);
-
-            chatWindow.scrollTo(0, limit);
+            processMessagePacket(packet);
+            scrollToEndChat();
         }
     };
 
@@ -467,7 +487,7 @@ function tryPlaceBet(betNumber, betValue) {
             return false;
         }
 
-        if ((betNumber == 'black' || betNumber == 'red') && final > 50000) {
+        if ((betNumber == 'black' || betNumber == 'red') && final > 100000) {
             return false;
         }
     }
@@ -477,7 +497,7 @@ function tryPlaceBet(betNumber, betValue) {
         totalBets = totalBets + +x.dataset.value;
     });
 
-    if (totalBets > 100000) {
+    if (totalBets > 200000) {
         return false;
     }
 

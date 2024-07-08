@@ -27,9 +27,13 @@ namespace TuesdayMachines.Controllers
 
         [HttpGet("Broadcaster/Index")]
         [HttpGet("Broadcaster/Index/{id}")]
-        public IActionResult Index(string id)
+        public async Task<IActionResult> Index(string id)
         {
-            return View();
+            var broadcaster = await _broadcastersRepository.GetBroadcasterByAccountId(GetRealId(id));
+            if (broadcaster == null)
+                return Redirect(Url.Action("Index", "Home"));
+
+            return View("Accounts", broadcaster);
         }
 
         [HttpGet("Broadcaster/Accounts")]

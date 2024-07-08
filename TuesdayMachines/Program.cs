@@ -33,7 +33,9 @@ builder.Services.AddSingleton<DatabaseService>();
 builder.Services.AddSingleton<IMayanGame, MayanGameService>();
 builder.Services.AddSingleton<IPlinkoGame, PlinkoGameService>();
 builder.Services.AddSingleton<IMinesGame, MinesGameService>();
+builder.Services.AddSingleton<IDuelDuelDuelGame, DuelDuelDuelGameService>();
 builder.Services.AddSingleton<IJwtTokenHandler, JwtTokenHandlerService>();
+builder.Services.AddSingleton<IOnlinePlayersCounter, OnlinePlayersCounterService>();
 builder.Services.AddSingleton<IAccountsRepository, AccountsRepositoryService>();
 builder.Services.AddSingleton<ITwitchApi, TwitchApiService>();
 builder.Services.AddSingleton<IUserAuthentication, UserAuthenticationService>();
@@ -46,6 +48,7 @@ builder.Services.AddSingleton<LiveRouletteService>();
 builder.Services.AddSingleton<WebSocketRouletteHandler>();
 
 builder.Services.AddHostedService<ConfigureMongoDbService>();
+builder.Services.AddHostedService<PlayerLiveCountUpdateService>();
 builder.Services.AddHostedService<LiveRouletteBackgroundService>();
 builder.Services.AddHostedService<DatabaseCleanerService>();
 builder.Services.AddHostedService<WatchTimeUpdateService>();
@@ -90,6 +93,7 @@ app.MapGameEndpoints();
 app.MapMayanEndpoints();
 app.MapPlinkoEndpoints();
 app.MapMinesEndpoints();
+app.MapDuelDuelDuelEndpoints();
 
 app.UseAuthorization();
 

@@ -18,7 +18,7 @@ namespace TuesdayMachines.Api
                 .AddEndpointFilter<ValidationFilter<DefaultGamePlayModel>>();
         }
 
-        public static async Task<IResult> Play([FromBody] DefaultGamePlayModel model, IPointsRepository pointsRepository, IUserFairPlay userFairPlay, IPlinkoGame plinkoGame, ISpinsRepository spinsRepository, HttpContext context)
+        public static async Task<IResult> Play([FromBody] DefaultGamePlayModel model, IOnlinePlayersCounter onlinePlayersCounter, IPointsRepository pointsRepository, IUserFairPlay userFairPlay, IPlinkoGame plinkoGame, ISpinsRepository spinsRepository, HttpContext context)
         {
             bool found = false;
             for (var i = 0; i < _betsAllowedValues.Length; i++)
@@ -37,6 +37,8 @@ namespace TuesdayMachines.Api
             var result = pointsRepository.TakePoints(account.TwitchId, model.Wallet, model.Bet);
             if (!result.Success)
                 return Results.Json(new { error = "not_sufficient_funds" });
+
+            onlinePlayersCounter.AddPlayer("plinko", account.Id, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
 
             var roundInfo = userFairPlay.GetUserSeedRoundInfo(account.Id);
             var gameResult = plinkoGame.SimulateGame(roundInfo.Client, roundInfo.Server, roundInfo.Nonce, model.Bet);

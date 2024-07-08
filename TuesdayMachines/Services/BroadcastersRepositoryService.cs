@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using Microsoft.Extensions.Caching.Memory;
+using MongoDB.Driver;
 using TuesdayMachines.Dto;
 using TuesdayMachines.Interfaces;
 using TuesdayMachines.Models;
@@ -8,9 +9,11 @@ namespace TuesdayMachines.Services
     public class BroadcastersRepositoryService : IBroadcastersRepository
     {
         private readonly DatabaseService _databaseService;
-        public BroadcastersRepositoryService(DatabaseService databaseService)
+        private readonly IMemoryCache _memoryCache;
+        public BroadcastersRepositoryService(DatabaseService databaseService, IMemoryCache memoryCache)
         {
             _databaseService = databaseService;
+            _memoryCache = memoryCache;
         }
 
         public async Task<BroadcasterDTO> CreateBroadcaster(AccountDTO account, string pointNames)
@@ -45,11 +48,20 @@ namespace TuesdayMachines.Services
             return await (await broadcasters.FindAsync(x => x.AccountId == accountId)).FirstOrDefaultAsync();
         }
 
-        public async Task<List<BroadcasterDTO>> GetBroadcasters()
+        public async Task<List<BroadcasterDTO>> GetBroadcasters(bool useCache)
         {
-            var broadcasters = _databaseService.GetBroadcasters();
+            if (!useCache)
+            {
+                var result = await (await _databaseService.GetBroadcasters().FindAsync(Builders<BroadcasterDTO>.Filter.Empty)).ToListAsync();
+                _memoryCache.Set("broadcastersList", result);
+                return result;
+            }
 
-            return await (await broadcasters.FindAsync(Builders<BroadcasterDTO>.Filter.Empty)).ToListAsync();
+            return await _memoryCache.GetOrCreateAsync("broadcastersList", async entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15);
+                return await (await _databaseService.GetBroadcasters().FindAsync(Builders<BroadcasterDTO>.Filter.Empty)).ToListAsync();
+            });
         }
 
         public async Task<List<BroadcasterDTO>> GetBroadcasters(IEnumerable<string> broadcasterAccountIds)

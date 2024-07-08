@@ -68,5 +68,14 @@ namespace TuesdayMachines.Properties {
                 return ResourceManager.GetString("_mayanReelData", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {&quot;baseGame&quot;:[[1,1,1,5,5,6,6,4,4,8,8,3,3,2,2,2,8,7,7,7,1,9,9,9,10,10,1,5,5,5,4,0,4,4,2,2,8,1,4,4,4,7,9,10,3,3,3,6,6,6,9,9,9,1,2,3,4,0,5,6,7,8,9,10,1,5,2,8,7,3,5,6],[10,2,2,2,4,7,7,2,8,8,6,6,2,3,8,8,0,9,9,9,3,3,3,1,2,0,7,7,7,7,5,2,9,10,10,7,4,4,1,1,1,9,5,5,1,5,5,8,8,8,2,2,2,5,5,2,9,9,10,7,7,7,2,2,2,7,7,7,1,1,1],[7,8,8,2,0,2,2,6,3,1,9,10,10,10,6,7,7,7,5,5,5,9,1,1,8,4,2,2,7,7,1,1,4,9,4,10,8,1,1,3,9,9,9,1,1,1,0,6,6,8,8,10,10,10,6,6,6,1,2,3,4,5,6,7,8,9,10],[2,2,5,5,4,4,4,7,2,1,1,5,7,7,9,10,6,6,6,7,7,0,7,7,4,4,8,1 [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string _x3duelReelData {
+            get {
+                return ResourceManager.GetString("_x3duelReelData", resourceCulture);
+            }
+        }
     }
 }

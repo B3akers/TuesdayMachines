@@ -76,12 +76,12 @@ namespace TuesdayMachines.Services
                     return null;
                 }
 
-                var isColorBet = number == "black" || number == "red";
-
                 PointOperationResult takePointResult = default(PointOperationResult);
 
                 lock (BetsLocker)
                 {
+                    var isColorBet = number == "black" || number == "red";
+
                     if (!PlayersBets.TryGetValue(info.Account.Id, out var bets))
                     {
                         bets = new PlayerRoundBets() { WalletId = info.WalletId, TwitchId = info.Account.TwitchId, Login = info.Account.TwitchLogin };
@@ -97,7 +97,7 @@ namespace TuesdayMachines.Services
                     {
                         if (bet.Key == number)
                         {
-                            if (isColorBet && bet.Value + placeBet.Amount > 50000)
+                            if (isColorBet && bet.Value + placeBet.Amount > 100000)
                                 return null;
 
                             if (!isColorBet && bet.Value + placeBet.Amount > 10000)
@@ -109,7 +109,7 @@ namespace TuesdayMachines.Services
                         totalBets += bet.Value;
                     }
 
-                    if (totalBets > 100000)
+                    if (totalBets > 200000)
                         return null;
 
                     takePointResult = _pointsRepository.TakePoints(info.Account.TwitchId, info.WalletId, placeBet.Amount);

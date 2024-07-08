@@ -58,6 +58,9 @@ namespace TuesdayMachines.WebSockets
         [JsonPropertyName("betClosed")]
         public bool BetClosed { get; set; }
 
+        [JsonPropertyName("messages")]
+        public ConcurrentQueue<RouletteChatMsg> Messages { get; set; }
+
         [JsonPropertyName("myBets")]
         public ConcurrentDictionary<string, long> MyBets { get; set; }
     };
@@ -132,6 +135,9 @@ namespace TuesdayMachines.WebSockets
         [JsonPropertyName("login")]
         public string Login { get; set; }
 
+        [JsonPropertyName("time")]
+        public long Time { get; set; }
+
         [JsonPropertyName("msg")]
         public string Msg { get; set; }
     };
@@ -190,8 +196,9 @@ namespace TuesdayMachines.WebSockets
 
     public class WebSocketRouletteHandler
     {
-        private ConcurrentDictionary<string, WsConnectionInfo> _activeConnections = new ConcurrentDictionary<string, WsConnectionInfo>();
-        private ConcurrentDictionary<string, ConcurrentDictionary<string, WsRoulettePlayer>> _roomsConnections = new ConcurrentDictionary<string, ConcurrentDictionary<string, WsRoulettePlayer>>();
+        private ConcurrentDictionary<string, WsConnectionInfo> _activeConnections = new();
+        private ConcurrentDictionary<string, ConcurrentDictionary<string, WsRoulettePlayer>> _roomsConnections = new();
+        private ConcurrentDictionary<string, ConcurrentQueue<RouletteChatMsg>> _roomMessages = new();
 
         private readonly CancellationTokenSource _cts;
         private readonly IPointsRepository _pointsRepository;
@@ -324,15 +331,26 @@ namespace TuesdayMachines.WebSockets
                                 {
                                     if (msgPacket.Msg.Length < 256)
                                     {
-                                        if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - lastMessage > 300)
+                                        var currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                                        if (currentTime - lastMessage > 300)
                                         {
-                                            await SendToAllInRoom(JsonSerializer.Serialize(new RouletteChatMsg()
+                                            var reponsePacket = new RouletteChatMsg()
                                             {
                                                 Login = account.TwitchLogin,
                                                 TwitchId = account.TwitchId,
-                                                Msg = msgPacket.Msg
-                                            }), walletId);
-                                            lastMessage = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                                                Msg = msgPacket.Msg,
+                                                Time = currentTime
+                                            };
+
+                                            if (_roomMessages.TryGetValue(walletId, out var rouletteChats))
+                                            {
+                                                rouletteChats.Enqueue(reponsePacket);
+                                                if (rouletteChats.Count > 30)
+                                                    rouletteChats.TryDequeue(out _);
+                                            }
+
+                                            await SendToAllInRoom(JsonSerializer.Serialize(reponsePacket), walletId);
+                                            lastMessage = currentTime;
                                         }
                                     }
                                 }
@@ -383,6 +401,8 @@ namespace TuesdayMachines.WebSockets
                             break;
                         }
 
+                        var messages = _roomMessages.GetOrAdd(walletId, new ConcurrentQueue<RouletteChatMsg>());
+
                         var state = new RouletteGameState();
                         state.AccountId = account.Id;
                         state.TwitchId = account.TwitchId;
@@ -393,6 +413,7 @@ namespace TuesdayMachines.WebSockets
                         state.Nonce = _liveRouletteService.LastNonce;
                         state.BetClosed = _liveRouletteService.IsBetClosed;
                         state.Balance = accountBalance.Balance;
+                        state.Messages = messages;
 
                         if (!state.BetClosed)
                         {

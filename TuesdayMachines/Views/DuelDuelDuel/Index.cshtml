@@ -1,0 +1,25 @@
+﻿﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>DuelDuelDuel - TuesdayMachines</title>
+	<script src="https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.js"></script>
+	<link rel="stylesheet" href="~/css/3xduel/index.css" />
+</head>
+<body>
+    @Html.AntiForgeryToken()
+    <script>
+        const csrfToken = document.getElementsByName('csrfToken')[0].value;
+    </script>
+    <script>
+        const playGameUrl = '@Url.Action("Play", "DuelDuelDuel")';
+        const getReplayUrl = '@Url.Action("Replay", "DuelDuelDuel")';
+        const getWalletUrl = '@Url.Action("GetWallet", "Game")';
+    </script>
+	<script src="~/js/3xduel/index.js"></script>
+</body>
+</html>

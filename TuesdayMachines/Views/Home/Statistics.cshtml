@@ -19,7 +19,7 @@
                     {
                         if (game.Metadata.Contains("disableStats:1"))
                             continue;
-                        <option value="@game.Code">@game.Name</option>
+                        <option data-metadata="@string.Join('|',game.Metadata)" value="@game.Code">@game.Name</option>
                     }
                 </select>
             </div>
@@ -59,6 +59,7 @@
                             <th>Wallet</th>
                             <th>Date</th>
                             <th>Value</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>

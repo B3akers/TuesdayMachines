@@ -154,6 +154,8 @@ const Spritesheet = PIXI.Spritesheet;
 const Texture = PIXI.Texture;
 const BitmapText = PIXI.BitmapText;
 
+var replayData;
+
 var walletId;
 var walletName;
 
@@ -634,6 +636,10 @@ function rescaleObjects() {
 }
 
 function canStartNewGame() {
+    if (replayData) {
+        return false;
+    }
+
     if (isPlaying) {
         return false;
     }
@@ -674,6 +680,42 @@ async function getCurrentBalance() {
             referrerPolicy: 'no-referrer',
             body: JSON.stringify({
                 id: walletId
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Response status: ${response.status}`);
+        }
+
+        const json = await response.json();
+
+        if (!json.error) {
+            return json;
+        } else {
+            console.error(json.error);
+        }
+    } catch (error) {
+        console.error(error);
+    }
+
+    return null;
+}
+
+async function getReplaySpinData(id) {
+    try {
+        const response = await fetch(getReplayUrl, {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Csrf-Token-Value': csrfToken
+            },
+            redirect: 'follow',
+            referrerPolicy: 'no-referrer',
+            body: JSON.stringify({
+                id: id
             })
         });
 
@@ -827,12 +869,30 @@ window.addEventListener('resize', function () {
 (async function () {
     const searchParams = new URLSearchParams(window.location.search);
     walletId = searchParams.get('wallet');
+    const replayId = searchParams.get('replayId');
 
-    var walletInfo = await getCurrentBalance(walletId);
-    if (!walletInfo)
-        return;
+    if (replayId) {
+        walletName = "";
+        walletInfo = {
+            name: '',
+            balance: 0
+        }
 
-    walletName = walletInfo.name;
+        replayData = await getReplaySpinData(replayId);
+        if (!replayData) {
+            return;
+        }
+    } else {
+        if (!walletId) {
+            return;
+        }
+
+        var walletInfo = await getCurrentBalance(walletId);
+        if (!walletInfo)
+            return;
+
+        walletName = walletInfo.name;
+    }
 
     //Update initial balance
     //
@@ -1308,5 +1368,31 @@ window.addEventListener('resize', function () {
 
     });
 
+    if (replayData) {
+        for (let i = 0; i < boardLockedSymbols.length; i++) {
+            boardLockedSymbols[i].remove();
+        }
+        boardLockedSymbols.length = 0;
+
+        for (let i = 0; i < boardStoneCovers.length; i++) {
+            const cover = boardStoneCovers[i];
+            cover.startCover();
+        }
+
+        for (let i = 0; i < boardReelsInfo.length; i++) {
+            const boardReel = boardReelsInfo[i];
+            boardReel.data = reelsData.baseGame[i];
+            boardReel.startMoving();
+        }
+
+        const betValueSpan = document.getElementById('betValueSpan');
+        betValueSpan.dataset.value = replayData.bet;
+        updateCurrencySpanText(document.getElementById('betValueSpan'), walletName);
+
+        setTimeout(function () {
+            gameSpinInfo.spinData = replayData;
+            gameSpinInfo.spinDataIndex = 0;
+        }, 1500);
+    }
 
 })();

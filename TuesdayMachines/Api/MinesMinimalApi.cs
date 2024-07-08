@@ -20,7 +20,7 @@ namespace TuesdayMachines.Api
                 .AddEndpointFilter<ValidationFilter<MinesGamePlayModel>>();
         }
 
-        public static IResult Play([FromBody] MinesGamePlayModel model, IPointsRepository pointsRepository, IUserFairPlay userFairPlay, IMinesGame minesGame, ISpinsRepository spinsRepository, HttpContext context)
+        public static IResult Play([FromBody] MinesGamePlayModel model, IOnlinePlayersCounter onlinePlayersCounter, IPointsRepository pointsRepository, IUserFairPlay userFairPlay, IMinesGame minesGame, ISpinsRepository spinsRepository, HttpContext context)
         {
             var account = context.Items["userAccount"] as Dto.AccountDTO;
             var _lock = _locks.GetOrAdd(account.Id, new object());
@@ -53,10 +53,12 @@ namespace TuesdayMachines.Api
                     if (!result.Success)
                         return Results.Json(new { error = "not_sufficient_funds" });
 
-                    var roundInfo = userFairPlay.GetUserSeedRoundInfo(account.Id);
-                    var resultGame = minesGame.SimulateGame(roundInfo.Client, roundInfo.Server, roundInfo.Nonce, gameplay.Mines);
+                    onlinePlayersCounter.AddPlayer("mines", account.Id, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
 
-                    userFairPlay.AddMinesGame(account.Id, gameplay.Wallet, gameplay.Bet, resultGame.Bombs);
+                    var roundInfo = userFairPlay.GetUserSeedRoundInfo(account.Id);
+                    var bombs = minesGame.SimulateGame(roundInfo.Client, roundInfo.Server, roundInfo.Nonce, gameplay.Mines);
+
+                    userFairPlay.AddMinesGame(account.Id, gameplay.Wallet, gameplay.Bet, bombs);
 
                     return Results.Json(new { success = "game_started", balance = result.Balance });
                 }

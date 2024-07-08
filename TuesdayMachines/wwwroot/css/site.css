@@ -35,6 +35,22 @@ html {
     width: 200px;
 }
 
+.blink_me {
+    animation: blinker 2s linear infinite;
+    width: 10px;
+    height: 10px;
+    display: inline-block;
+    border: 1px solid green;
+    background-color: green;
+    border-radius: 100%;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0.6;
+    }
+}
+
     .category-selection[selected] {
         border: 2px solid #73AD21;
         border-radius: 1rem;

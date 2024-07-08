@@ -1,4 +1,6 @@
-﻿using TuesdayMachines.Interfaces;
+﻿using System.Security.Cryptography;
+using System.Text;
+using TuesdayMachines.Interfaces;
 using TuesdayMachines.Utils;
 
 namespace TuesdayMachines.Services
@@ -25,42 +27,47 @@ namespace TuesdayMachines.Services
             return result;
         }
 
-        public MinesGameData SimulateGame(string clientSeed, string serverSeed, long nonce, int mines)
+        public int[] SimulateGame(string clientSeed, string serverSeed, long nonce, int mines)
         {
             List<int> numbers = new List<int>(25);
             for (var i = 0; i < 25; i++)
                 numbers.Add(i);
 
             int[] values = new int[mines];
+            Span<byte> resultSha = stackalloc byte[32];
 
-            int number = 0;
-            while (mines > 0)
+            using (var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(serverSeed)))
             {
-                var resultSha = $"{clientSeed}:{nonce}:{number}".HMAC(serverSeed);
-                for (var i = 0; i < 32; i += 4)
+                int number = 0;
+                while (mines > 0)
                 {
-                    if (mines == 0)
-                        break;
+                    hmacsha256.TryComputeHash(Encoding.UTF8.GetBytes($"{clientSeed}:{nonce}:{number}"), resultSha, out _);
 
-                    double value_1 = (resultSha[i] / _preCalculated[0]);
-                    double value_2 = (resultSha[i + 1] / _preCalculated[1]);
-                    double value_3 = (resultSha[i + 2] / _preCalculated[2]);
-                    double value_4 = (resultSha[i + 3] / _preCalculated[3]);
+                    for (var i = 0; i < 32; i += 4)
+                    {
+                        if (mines == 0)
+                            break;
 
-                    double final_value = (value_1 + value_2 + value_3 + value_4) * numbers.Count;
+                        double value_1 = (resultSha[i] / _preCalculated[0]);
+                        double value_2 = (resultSha[i + 1] / _preCalculated[1]);
+                        double value_3 = (resultSha[i + 2] / _preCalculated[2]);
+                        double value_4 = (resultSha[i + 3] / _preCalculated[3]);
 
-                    var index = (int)Math.Floor(final_value);
+                        double final_value = (value_1 + value_2 + value_3 + value_4) * numbers.Count;
 
-                    values[values.Length - mines] = numbers[index];
-                    numbers.RemoveAt(index);
+                        var index = (int)final_value;
 
-                    mines--;
+                        values[values.Length - mines] = numbers[index];
+                        numbers.RemoveAt(index);
+
+                        mines--;
+                    }
+
+                    number++;
                 }
-
-                number++;
             }
 
-            return new MinesGameData() { Bombs = values };
+            return values;
         }
 
         private double Factorial(double number)

@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
+using System.Text.Json.Serialization;
 
 namespace TuesdayMachines.Dto
 {
@@ -13,6 +14,8 @@ namespace TuesdayMachines.Dto
         public string Game { get; set; }
         [BsonRepresentation(BsonType.ObjectId)]
         public string Wallet { get; set; }
+        [JsonIgnore]
+        public string Seed { get; set; }
         public long Bet { get; set; }
         public long Win { get; set; }
         public long WinX { get; set; }

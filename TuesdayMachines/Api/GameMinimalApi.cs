@@ -109,8 +109,10 @@ namespace TuesdayMachines.Api
                 return Results.Json(new { redirect = $"/roulette?wallet={Uri.EscapeDataString(model.Wallet)}" });
             else if (model.GameId == "mines")
                 return Results.Json(new { redirect = $"/mines?wallet={Uri.EscapeDataString(model.Wallet)}" });
+			else if (model.GameId == "3xduel")
+				return Results.Json(new { redirect = $"/duelduelduel?wallet={Uri.EscapeDataString(model.Wallet)}" });
 
-            return Results.Json(new { error = "invalid_model" });
+			return Results.Json(new { error = "invalid_model" });
         }
 
         public static async Task<IResult> GetWallet([FromBody] IdModel id, IPointsRepository pointsRepository, IBroadcastersRepository broadcastersRepository, HttpContext context)
@@ -144,7 +146,7 @@ namespace TuesdayMachines.Api
 
         public static async Task<IResult> GetGames(IGamesRepository gamesRepository)
         {
-            var games = await gamesRepository.GetGames();
+            var games = await gamesRepository.GetGames(false);
 
             return Results.Json(new { data = games });
         }

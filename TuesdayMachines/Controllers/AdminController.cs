@@ -23,7 +23,7 @@ namespace TuesdayMachines.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return View("Broadcasters");
         }
 
         public IActionResult Broadcasters()
@@ -39,7 +39,7 @@ namespace TuesdayMachines.Controllers
         [HttpGet]
         public async Task<IActionResult> GetBroadcasters()
         {
-            var accounts = await _broadcastersRepositoryService.GetBroadcasters();
+            var accounts = await _broadcastersRepositoryService.GetBroadcasters(false);
 
             return Json(new { data = accounts });
         }

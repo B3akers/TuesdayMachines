@@ -51,5 +51,10 @@ namespace TuesdayMachines.Services
 
             return result;
         }
+
+        public async Task<SpinStatDTO> GetSpinStat(string id)
+        {
+            return await (await _databaseService.GetSpinsStat().FindAsync(x => x.Id == id)).FirstOrDefaultAsync();
+        }
     }
 }

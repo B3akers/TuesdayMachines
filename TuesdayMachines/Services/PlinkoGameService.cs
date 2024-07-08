@@ -1,4 +1,7 @@
-﻿using TuesdayMachines.Interfaces;
+﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using System.Security.Cryptography;
+using System.Text;
+using TuesdayMachines.Interfaces;
 using TuesdayMachines.Utils;
 
 namespace TuesdayMachines.Services
@@ -41,30 +44,34 @@ namespace TuesdayMachines.Services
             int number = 0;
 
             int[] path = new int[16];
+            Span<byte> resultSha = stackalloc byte[32];
 
-            while (total > 0)
+            using (var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(serverSeed)))
             {
-                var resultSha = $"{clientSeed}:{nonce}:{number}".HMAC(serverSeed);
-
-                for (var i = 0; i < 32; i += 4)
+                while (total > 0)
                 {
-                    double value_1 = (resultSha[i] / _preCalculated[0]);
-                    double value_2 = (resultSha[i + 1] / _preCalculated[1]);
-                    double value_3 = (resultSha[i + 2] / _preCalculated[2]);
-                    double value_4 = (resultSha[i + 3] / _preCalculated[3]);
+                    hmacsha256.TryComputeHash(Encoding.UTF8.GetBytes($"{clientSeed}:{nonce}:{number}"), resultSha, out _);
 
-                    double final_value = (value_1 + value_2 + value_3 + value_4) * 2.0;
+                    for (var i = 0; i < 32; i += 4)
+                    {
+                        double value_1 = (resultSha[i] / _preCalculated[0]);
+                        double value_2 = (resultSha[i + 1] / _preCalculated[1]);
+                        double value_3 = (resultSha[i + 2] / _preCalculated[2]);
+                        double value_4 = (resultSha[i + 3] / _preCalculated[3]);
 
-                    bool direction = final_value >= 1.0;
-                    if (direction)
-                        index++;
+                        double final_value = (value_1 + value_2 + value_3 + value_4) * 2.0;
 
-                    path[16 - total] = (direction ? 1 : 0);
+                        bool direction = final_value >= 1.0;
+                        if (direction)
+                            index++;
 
-                    total--;
+                        path[16 - total] = (direction ? 1 : 0);
+
+                        total--;
+                    }
+
+                    number++;
                 }
-
-                number++;
             }
 
             result.Bet = bet;

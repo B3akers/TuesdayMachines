@@ -13,11 +13,13 @@ namespace TuesdayMachines.Controllers
         private readonly IUserAuthentication _userAuthentication;
         private readonly IGamesRepository _gamesRepository;
         private readonly IBroadcastersRepository _broadcastersRepository;
+        private readonly IOnlinePlayersCounter _onlinePlayersCounter;
 
-        public HomeController(IUserAuthentication userAuthentication, IGamesRepository gamesRepository, IBroadcastersRepository broadcastersRepository)
+        public HomeController(IUserAuthentication userAuthentication, IGamesRepository gamesRepository, IOnlinePlayersCounter onlinePlayersCounter, IBroadcastersRepository broadcastersRepository)
         {
             _userAuthentication = userAuthentication;
             _gamesRepository = gamesRepository;
+            _onlinePlayersCounter = onlinePlayersCounter;
             _broadcastersRepository = broadcastersRepository;
         }
 
@@ -25,6 +27,11 @@ namespace TuesdayMachines.Controllers
         {
             HomeIndexModel model = new HomeIndexModel();
             model.Games = await _gamesRepository.GetGames();
+            model.GamesPlayerCount = new int[model.Games.Count];
+            for (int i = 0; i < model.Games.Count; i++)
+            {
+                model.GamesPlayerCount[i] = _onlinePlayersCounter.GetPlayerCount(model.Games[i].Code);
+            }
             return View(model);
         }
 

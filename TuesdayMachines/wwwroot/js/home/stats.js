@@ -12,7 +12,13 @@ async function updateStatistics() {
         (Date.now() - (30 * (3600 * 24 * 1000))) / 1000,
     ];
 
-    const game = document.getElementById('gameCodeId').value;
+    const select = document.getElementById('gameCodeId');
+    const selectedOptions = select.children[select.selectedIndex];
+
+    const metadata = selectedOptions.dataset.metadata.split('|');
+    const canBeReplayed = metadata.includes('replay:1');
+
+    const game = selectedOptions.value;
     const time = document.getElementById('timeRange').value;
     const wallet = document.getElementById('walletId').value;
     const showX = document.getElementById('showType').value == '1';
@@ -55,6 +61,7 @@ async function updateStatistics() {
             const tdWallet = document.createElement('td');
             const tdDate = document.createElement('td');
             const tdValue = document.createElement('td');
+            const tdAction = document.createElement('td');
 
             const date = new Date(data.datetime * 1000);
 
@@ -63,11 +70,20 @@ async function updateStatistics() {
             tdDate.innerText = date.toLocaleDateString() + " " + date.toLocaleTimeString();
             tdValue.innerText = `${data.win.toLocaleString()} (${data.winX.toLocaleString()}X)`;
 
+            if (canBeReplayed) {
+                const a = document.createElement('a');
+                a.href = '/mayan?replayId=' + data.id;
+                a.innerText = 'Replay';
+
+                tdAction.appendChild(a);
+            }
+
             tr.appendChild(th);
             tr.appendChild(tdUser);
             tr.appendChild(tdWallet);
             tr.appendChild(tdDate);
             tr.appendChild(tdValue);
+            tr.appendChild(tdAction);
             tbody.appendChild(tr);
         }
     }

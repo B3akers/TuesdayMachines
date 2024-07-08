@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\assets\mayan\" />
+    <Folder Include="wwwroot\assets\3xduel\" />
   </ItemGroup>
 
 </Project>
